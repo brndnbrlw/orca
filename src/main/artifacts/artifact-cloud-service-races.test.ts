@@ -151,3 +151,13 @@ describe('ArtifactCloudService same-source races', () => {
     expect(String(fetchMock.mock.calls[3]?.[0])).toBe(`${apiUrl}/v1/artifacts/artifact-b`)
   })
 })
+
+// Retain upstream transport mechanics under a test-only enabled policy.
+vi.mock('../../shared/orca-fork-policy', () => ({
+  ORCA_FORK_POLICY: Object.freeze({
+    vendorServices: true,
+    executablePlugins: false,
+    cloudRecipes: false,
+    browserCredentialImport: false
+  })
+}))

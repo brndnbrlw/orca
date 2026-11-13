@@ -1,3 +1,5 @@
+import '../test-support/upstream-mobile-relay.test-fixture'
+import '../test-support/mobile-relay-native-modules.test-fixture'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const fakes = vi.hoisted(() => ({

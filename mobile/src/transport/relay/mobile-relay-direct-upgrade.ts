@@ -1,3 +1,4 @@
+import { ORCA_FORK_POLICY } from '../../../../src/shared/orca-fork-policy'
 import * as ExpoCrypto from 'expo-crypto'
 import type {
   DeviceCredentialInstalled,
@@ -46,7 +47,7 @@ export async function upgradeDirectMobileRelay(args: {
   host: HostProfile
   dependencies?: Partial<Dependencies>
 }): Promise<MobileRelayDirectUpgradeResult | null> {
-  if (args.host.relay) {
+  if (!ORCA_FORK_POLICY.vendorServices || args.host.relay) {
     return null
   }
   const dependencies: Dependencies = {

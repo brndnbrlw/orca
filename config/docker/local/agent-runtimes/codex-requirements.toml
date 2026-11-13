@@ -1,0 +1,13 @@
+check_for_update_on_startup = false
+
+[otel]
+exporter = "none"
+metrics_exporter = "none"
+trace_exporter = "none"
+log_user_prompt = false
+log_agent_responses = false
+log_guardian_assessments = false
+
+[features]
+plugins = false
+in_app_updates = false

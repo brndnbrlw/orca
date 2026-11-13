@@ -1,3 +1,7 @@
+# Keep build/test dependency links inside this independent checkout.
+enableGlobalVirtualStore: false
+virtualStoreDir: node_modules/.pnpm
+
 # Exclude mobile’s independent workspace/lockfile: recursive discovery causes ERR_PNPM_UNUSED_PATCH.
 # Explicit registry/security workspaces avoid file:-dependency relinks, whose virtual-store churn
 # raced Windows node-gyp and removed @vscode/windows-process-tree’s binding.gyp mid-rebuild.
@@ -9,6 +13,9 @@ packages:
 minimumReleaseAge: 4320
 # Preserve the existing exception for the explicitly selected Bun 1.4.4 release.
 minimumReleaseAgeExclude:
+  # Explicit security fixes for the advisories found in this fork's production audit.
+  - 'hono@4.13.16'
+  - '@hono/node-server@2.1.6'
   # Security fix for compressed-request crashes (GHSA-27r3-jxmh-p828).
   - 'body-parser@2.4.0'
   - 'bun@1.4.4'
@@ -112,7 +119,8 @@ packageExtensions:
       vfile: ^6.0.0
 
 overrides:
-  hono@>=4.12.4 <4.13.11: 4.13.11
+  hono@>=4.12.4 <4.13.16: 4.13.16
+  '@hono/node-server@>=2.0.0 <2.1.6': 2.1.6
   dompurify@<3.4.17: 3.4.17
   # Upstream markdown/math packages still require the vulnerable 0.16 line.
   katex@>=0.11.0 <0.18.2: 0.18.10

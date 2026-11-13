@@ -1,3 +1,4 @@
+import { ORCA_FORK_POLICY } from '../../../shared/orca-fork-policy'
 import { app } from 'electron'
 import {
   cleanCloudServiceUrl as cleanUrl,
@@ -43,6 +44,9 @@ export function getOrcaCloudAuthConfig(
   env: NodeJS.ProcessEnv = process.env,
   packaged: boolean = isPackagedOrcaBuild()
 ): { configured: true; config: OrcaCloudAuthConfig } | { configured: false; setupMessage: string } {
+  if (!ORCA_FORK_POLICY.vendorServices) {
+    return { configured: false, setupMessage: 'Orca vendor services are disabled in this fork.' }
+  }
   // Plain HTTP token endpoints are development-only.
   const allowLoopbackHttp = !packaged
   const cleanEndpointUrl = (value: string | undefined): string | null =>
@@ -122,5 +126,10 @@ export function isOrcaCloudDevAuthEnabled(
   env: NodeJS.ProcessEnv = process.env,
   packaged: boolean = isPackagedOrcaBuild()
 ): boolean {
-  return env.ORCA_CLOUD_DEV_AUTH === '1' && env.NODE_ENV !== 'production' && !packaged
+  return (
+    ORCA_FORK_POLICY.vendorServices &&
+    env.ORCA_CLOUD_DEV_AUTH === '1' &&
+    env.NODE_ENV !== 'production' &&
+    !packaged
+  )
 }

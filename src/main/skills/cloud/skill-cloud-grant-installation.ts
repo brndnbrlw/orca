@@ -1,3 +1,4 @@
+import { ORCA_FORK_POLICY } from '../../../shared/orca-fork-policy'
 import { app } from 'electron'
 import {
   SKILL_BUNDLE_INSTALL_CAPABILITY,
@@ -77,6 +78,9 @@ export async function installSkillBundleCloudGrant(
   signal?: AbortSignal,
   onProgress?: (progress: SkillBundleInstallProgress) => void
 ) {
+  if (!ORCA_FORK_POLICY.vendorServices) {
+    throw new Error('Hosted skill downloads are disabled in this fork.')
+  }
   const manifest = grant.version.manifest
   if (!('skills' in manifest)) {
     throw new Error('skill-bundle-cloud-manifest-required')
@@ -147,6 +151,9 @@ export async function installSkillCloudGrant(
   input: SkillCloudGrantInstallInput,
   signal?: AbortSignal
 ) {
+  if (!ORCA_FORK_POLICY.vendorServices) {
+    throw new Error('Hosted skill downloads are disabled in this fork.')
+  }
   const request: SkillInstallRequest = {
     operationId: input.operationId,
     package: {

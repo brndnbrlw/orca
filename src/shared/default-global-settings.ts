@@ -164,7 +164,7 @@ export function buildDefaultSettings(args: {
     nativeChatShellEnvironmentVariables: [],
     nativeChatSessionOptions: {},
     // New chats of agents on their own settings; others start in their agent permission.
-    nativeChatPermissionMode: 'full-access',
+    nativeChatPermissionMode: 'ask',
     openInApplications: [...DEFAULT_OPEN_IN_APPLICATIONS],
     rightSidebarOpenByDefault: true,
     showGitIgnoredFiles: true,
@@ -177,7 +177,7 @@ export function buildDefaultSettings(args: {
     showAutomationsButton: true,
     artifactsEnabled: true,
     // New profiles only; stored profiles without the key load as false (normalizeLoadedGlobalSettings).
-    artifactSharingEnabled: true,
+    artifactSharingEnabled: false,
     agentSkillSharingEnabled: false,
     nestedWorkerMaxDepth: NESTED_WORKER_MAX_DEPTH_DEFAULT,
     nestedWorkerMaxDepthDefaultedToFour: true,
@@ -256,7 +256,7 @@ export function buildDefaultSettings(args: {
     agentLaunchChoices: {},
     agentDefaultEnv: {},
     agentYoloDefaultsMigrated: true,
-    agentPermissionDefault: 'full-access',
+    agentPermissionDefault: 'ask',
     agentPermissionOverrides: {},
     agentStatusHooksEnabled: true,
     claudeSubagentNavigationEnabled: true,

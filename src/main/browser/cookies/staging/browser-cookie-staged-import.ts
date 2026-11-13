@@ -1,3 +1,4 @@
+import { browserCredentialImportDenial } from '../policy/browser-credential-import-policy'
 import { DatabaseSync } from 'node:sqlite'
 import type { ImportedDomainScope } from '../policy/cookie-import-scope'
 import { domainIsInImportedScope, importedDomainScope } from '../policy/cookie-import-scope'
@@ -108,6 +109,10 @@ export function applyScopedStagedCookieImport(
   liveCookiesPath: string,
   stagedCookiesPath: string
 ): boolean {
+  const denied = browserCredentialImportDenial()
+  if (denied) {
+    throw new InvalidStagedCookieImportError(denied.reason)
+  }
   const database = new DatabaseSync(liveCookiesPath, { timeout: 1_000 })
   let attached = false
   let transactionOpen = false

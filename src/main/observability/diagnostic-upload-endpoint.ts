@@ -1,3 +1,5 @@
+import { ORCA_FORK_POLICY } from '../../shared/orca-fork-policy'
+
 export function resolveDiagnosticBuildTokenEndpoint(): string | null {
   const endpoint =
     typeof ORCA_DIAGNOSTICS_TOKEN_URL !== 'undefined'
@@ -17,6 +19,9 @@ export function resolveDiagnosticBuildIdentity(): 'stable' | 'rc' | null {
 }
 
 export function resolveDiagnosticTokenEndpoint(): string | null {
+  if (!ORCA_FORK_POLICY.vendorServices) {
+    return null
+  }
   const buildEndpoint = resolveDiagnosticBuildTokenEndpoint()
   // Pin official builds to the support endpoint named by the UI, regardless of user environment.
   if (resolveDiagnosticBuildIdentity()) {

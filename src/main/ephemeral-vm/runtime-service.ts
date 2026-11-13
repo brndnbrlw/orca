@@ -1,3 +1,4 @@
+import { assertCloudRecipesAllowed } from '../../shared/ephemeral-vm-recipe-policy'
 import type { OrcaVmRecipe } from '../../shared/orca-yaml-hook-types'
 import {
   listEphemeralVmRuntimes,
@@ -95,6 +96,7 @@ export type ResumeEphemeralVmRuntimeResult = SuspendEphemeralVmRuntimeResult
 export async function provisionEphemeralVmRuntime(
   args: ProvisionEphemeralVmRuntimeArgs
 ): Promise<ProvisionEphemeralVmRuntimeResult> {
+  assertCloudRecipesAllowed()
   const writeAhead = beginEphemeralVmProvisioning(args)
   try {
     const start = await new ShellRecipeDriver(args.recipe, args.repoPath).runCreate({
@@ -130,9 +132,10 @@ export async function provisionEphemeralVmRuntime(
   }
 }
 
-export function cleanupEphemeralVmRuntime(
+export async function cleanupEphemeralVmRuntime(
   args: CleanupEphemeralVmRuntimeArgs
 ): Promise<CleanupEphemeralVmRuntimeResult> {
+  assertCloudRecipesAllowed()
   return runControlledEphemeralVmRuntimeCleanup({
     userDataPath: args.userDataPath,
     runtimeId: args.runtimeId,
@@ -144,6 +147,7 @@ export function cleanupEphemeralVmRuntime(
 async function cleanupEphemeralVmRuntimeOnce(
   args: CleanupEphemeralVmRuntimeArgs
 ): Promise<CleanupEphemeralVmRuntimeResult> {
+  assertCloudRecipesAllowed()
   const existing = listEphemeralVmRuntimes(args.userDataPath).find(
     (entry) => entry.id === args.runtimeId
   )
@@ -202,6 +206,7 @@ async function cleanupEphemeralVmRuntimeOnce(
 export async function suspendEphemeralVmRuntime(
   args: CleanupEphemeralVmRuntimeArgs
 ): Promise<SuspendEphemeralVmRuntimeResult> {
+  assertCloudRecipesAllowed()
   const existing = listEphemeralVmRuntimes(args.userDataPath).find(
     (entry) => entry.id === args.runtimeId
   )
@@ -238,6 +243,7 @@ export async function suspendEphemeralVmRuntime(
 export async function resumeEphemeralVmRuntime(
   args: CleanupEphemeralVmRuntimeArgs
 ): Promise<ResumeEphemeralVmRuntimeResult> {
+  assertCloudRecipesAllowed()
   const existing = listEphemeralVmRuntimes(args.userDataPath).find(
     (entry) => entry.id === args.runtimeId
   )

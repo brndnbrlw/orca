@@ -1,3 +1,4 @@
+import { assertMobileRelayAllowed } from '../transport/relay/mobile-relay-fork-policy'
 import type { PairingRelay } from '../../../src/shared/remote-runtime/pairing/mobile-relay-pairing-offer'
 import { hostStatusProbe } from '../transport/connection/host-status-probe-operations'
 import type { MobileRelayPairingJournal } from './mobile-relay-pairing-journal'
@@ -22,6 +23,7 @@ export function createRecoveringPairingRelayCandidate(args: {
   maxRecoveryAttempts?: number
   onLog?: ConnectionLogSink
 }): PairingCandidateClient {
+  assertMobileRelayAllowed()
   const log = createPairingRelayLogger(args.onLog)
   let relay = pairingRelayFromJournal(args.journal)
   let client = args.connect(relay, args.onLog)

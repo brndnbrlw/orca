@@ -1,3 +1,4 @@
+import { assertCloudRecipesAllowed } from './ephemeral-vm-recipe-policy'
 import { quoteCmdDoubleQuoted, quotePosixShell } from './shell/launch/shell-argument-quoting'
 import { spawn, type ChildProcessWithoutNullStreams } from 'node:child_process'
 import { StringDecoder } from 'node:string_decoder'
@@ -46,6 +47,7 @@ export async function runRecipeCommand(args: {
   onStderr?: (chunk: string) => void
   spawnCommand?: typeof spawn
 }): Promise<ProcessRunResult> {
+  assertCloudRecipesAllowed()
   const maxBytes = clampRecipeCaptureBytes(args.maxCaptureBytes)
   const spawnCommand = args.spawnCommand ?? spawn
 

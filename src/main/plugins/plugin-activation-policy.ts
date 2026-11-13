@@ -1,3 +1,4 @@
+import { pluginExecutionAllowed } from './plugin-execution-policy'
 import {
   getPluginActivationState,
   type PluginActivationState,
@@ -23,6 +24,7 @@ export function isPluginApproved(
 ): boolean {
   return (
     enabled &&
+    pluginExecutionAllowed(plugin.manifest) &&
     getPluginActivationState(plugin.pluginKey, plugin.consentFingerprint, lists) === 'approved'
   )
 }
@@ -39,7 +41,7 @@ export function livePluginActivationState(
   source: PluginPolicySource,
   plugin: ValidDiscoveredPlugin
 ): PluginActivationState {
-  if (!source.isPluginSystemEnabled()) {
+  if (!source.isPluginSystemEnabled() || !pluginExecutionAllowed(plugin.manifest)) {
     return 'disabled'
   }
   return getPluginActivationState(

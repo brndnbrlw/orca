@@ -1,3 +1,4 @@
+import { assertCloudRecipesAllowed } from '../../shared/ephemeral-vm-recipe-policy'
 import { app, ipcMain } from 'electron'
 import type { Store } from '../persistence/loading-store/store'
 import {
@@ -129,6 +130,7 @@ export function registerEphemeralVmHandlers(store: Store, pluginService?: Plugin
         provisionId?: string
       }
     ): Promise<EphemeralVmProvisionIpcResult> => {
+      assertCloudRecipesAllowed()
       const repo = getRecipeRepo(store, args.repoId)
       if (!repo.ok) {
         return provisionFailure(repo.failure)

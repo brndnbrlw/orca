@@ -1,3 +1,4 @@
+import { ORCA_FORK_POLICY } from '../../../shared/orca-fork-policy'
 import { join } from 'node:path'
 import { getAppEnvironment } from '../../../shared/app-environment'
 import { readFetchResponseTextWithinLimit } from '../../../shared/fetch-response-body'
@@ -55,6 +56,9 @@ export function readCachedWslHostsPolicy(
   userDataPath: string,
   appVersion: string
 ): WslHostsPolicy | null {
+  if (!ORCA_FORK_POLICY.vendorServices) {
+    return null
+  }
   const channel = wslHostsPolicyChannelForAppVersion(appVersion)
   if (!channel) {
     return null
@@ -101,7 +105,7 @@ export class WslHostsPolicyLiveUpdater {
 
   async start(): Promise<void> {
     this.stop()
-    if (!this.deps.isPackaged) {
+    if (!ORCA_FORK_POLICY.vendorServices || !this.deps.isPackaged) {
       return
     }
     this.channel = wslHostsPolicyChannelForAppVersion(this.deps.appVersion)
@@ -180,7 +184,11 @@ export class WslHostsPolicyLiveUpdater {
 
 /** Fetches only where the launch environment opened the gate, even while a cached block closes it. */
 export function startWslHostsPolicyLiveUpdates(): void {
-  if (process.platform !== 'win32' || !isWslHostsInternalGateOpen(process.env)) {
+  if (
+    !ORCA_FORK_POLICY.vendorServices ||
+    process.platform !== 'win32' ||
+    !isWslHostsInternalGateOpen(process.env)
+  ) {
     return
   }
   const environment = getAppEnvironment()

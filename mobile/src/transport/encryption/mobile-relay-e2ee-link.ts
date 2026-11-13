@@ -1,3 +1,4 @@
+import { assertMobileRelayAllowed } from '../relay/mobile-relay-fork-policy'
 import {
   RelayPhoneHelloSchema,
   type RelayPhoneHello
@@ -57,6 +58,7 @@ export class MobileRelayE2eeLink {
   private readonly inbound: WsInboundMessageQueue
 
   constructor(options: MobileRelayE2eeLinkOptions) {
+    assertMobileRelayAllowed()
     this.options = options
     this.socket = (options.createSocket ?? ((url) => receiveBinaryAsBase64(new WebSocket(url))))(
       relayConnectWebSocketUrl(options.endpoint.cellUrl, options.endpoint.relayHostId)

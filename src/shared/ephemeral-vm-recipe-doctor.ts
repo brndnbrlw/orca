@@ -1,3 +1,4 @@
+import { ORCA_FORK_POLICY } from './orca-fork-policy'
 import { accessSync, constants as fsConstants, existsSync, statSync } from 'node:fs'
 import { isAbsolute, join, normalize } from 'node:path'
 import type {
@@ -12,6 +13,15 @@ export function doctorEphemeralVmRecipe(args: {
   recipes: readonly OrcaVmRecipe[]
   localExecutionSupported?: boolean
 }): EphemeralVmRecipeDoctorResult {
+  if (!ORCA_FORK_POLICY.cloudRecipes) {
+    return buildDoctorResult(args.recipeId, args.repoPath, [
+      {
+        id: 'recipe.policy',
+        status: 'fail',
+        message: 'Cloud recipes are disabled in this Orca fork'
+      }
+    ])
+  }
   const checks: EphemeralVmRecipeDoctorCheck[] = []
   if (!args.localExecutionSupported) {
     checks.push({

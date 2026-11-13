@@ -1,0 +1,89 @@
+# Orca local container fork
+
+This is an independent fork of [stablyai/orca](https://github.com/stablyai/orca), retaining Orca's name, MIT license, browser UI, workspace model, terminals and native agent integrations. It is unrelated to ASH. The audited source base is `b1fefd9fcd3b93e6e12a9bbc51e217976ead61b3`.
+
+## Behavior changes
+
+- Vendor analytics, diagnostic/feedback uploads, cloud authentication, relay/push/connector factories, cloud artifact/skill sharing, vendor update/download refreshes and GitHub-star polling are permanently denied by `src/shared/orca-fork-policy.ts`. Saved consent and environment variables cannot enable these services. Local logs and local diagnostic capture remain available.
+- Executable plugins, cloud recipes, browser credential imports and staged-cookie replay are denied at their execution boundaries. Non-executable plugin contributions and ordinary clean browser sessions remain available.
+- New Claude and Codex chats and terminals default to **Ask**. Explicit user choices, including Full Access, are preserved. These approvals supplement the container boundary; they do not make arbitrary code trustworthy.
+- HTTP/WebSocket admission checks Host and Origin. Static assets use real-path containment and live on the read-only image. Pairing is authenticated, and owner-generated unused offers expire after five minutes.
+- The container runs as `node` (UID 1000), has no host credential/filesystem/socket mounts, drops all Linux capabilities, uses no-new-privileges and a read-only root filesystem, and publishes only `127.0.0.1:6768`. Memory, CPUs, processes and shared memory are bounded.
+- The pinned agent-browser driver normally injects `--no-sandbox`. The immutable Chromium wrapper removes that driver default and rejects other insecure browser flags. Chromium's own namespace and Seccomp-BPF sandboxes remain enabled. `chromium-seccomp.json` derives from Podman 6.2.0's containers-common 0.70.0 profile, with only `chroot` made unconditional so Chromium can enter its private unprivileged user namespace. The main browser and renderers have zero effective capabilities; Chromium uses a private namespace setup broker internally. The original Apache-2.0 license is included in `containers-common-LICENSE`.
+
+## Build
+
+A Linux x64 container engine is required. PowerShell helpers also detect the verified portable Podman install under the current user Programs directory. After a host reboot, start its existing machine with `podman machine start orca` (using the resolved executable when it is not on PATH). Podman on WSL2 is the verified Windows provider. The Node image and agent-browser release/hash are pinned; pnpm lockfiles are frozen. The source archive excludes ignored host credentials/state and dependencies; a separate credential-free bare clone preserves actual Git identity for Orca's build checks. Dockerfiles never copy the developer's `.git`, home or local credentials into the runtime image.
+
+PowerShell, from the repository root:
+
+```powershell
+./config/docker/local/build.ps1 -Engine podman
+```
+
+Linux/macOS:
+
+```sh
+./config/docker/local/build.sh
+```
+
+The helpers retain their temporary source archive path for reproducibility. Builds include the upstream mobile web bundle, React web client, Node server, PTY native addon, browser driver, upstream notices and dependency notices. The desktop Electron application is not installed in this container.
+
+## Run and pair
+
+```powershell
+./config/docker/local/run.ps1 -Engine podman
+. ./config/docker/local/resolve-engine.ps1
+$containerEngine = Resolve-OrcaContainerEngine
+& $containerEngine exec orca orca pair --address 127.0.0.1 --rotate
+```
+
+Or on Linux:
+
+```sh
+./config/docker/local/run.sh
+podman exec orca orca pair --address 127.0.0.1 --rotate
+```
+
+Open the access link printed by the **owner-only** pairing command within five minutes. It pairs this browser with the local server. Treat that link as a temporary secret. Already paired devices keep their access until revoked. Startup does not print pairing tokens. Plain [http://127.0.0.1:6768/](http://127.0.0.1:6768/) prompts for a pairing URL when the browser is new.
+
+The optional `compose.yaml` uses the same settings; run it from this directory so the syscall profile resolves correctly. Do not publish this unencrypted endpoint to your LAN or the internet.
+
+## Files, terminals and browser QA
+
+The named `orca-data` volume holds `/data/home`, `/data/state` and `/data/workspaces`. Container restarts/replacement preserve it. This single-owner volume is not a backup or a multi-tenant isolation system. Profile credentials are sealed with a key in that private volume; a person who can read the whole volume or its backup can unseal them. Protect host/container-engine access and any backups.
+
+Create a project in the UI, or import a folder:
+
+```sh
+podman exec orca node -e 'require("fs").mkdirSync("/data/workspaces/demo", {recursive:true})'
+podman exec orca orca repo add --path /data/workspaces/demo --kind folder
+podman exec orca orca terminal create --worktree path:/data/workspaces/demo --command 'python3 --version'
+podman exec orca orca tab create --worktree path:/data/workspaces/demo --url http://127.0.0.1:6768/
+podman exec orca orca snapshot --worktree path:/data/workspaces/demo
+```
+
+Bash, Python 3, Git and sandboxed Chromium are installed. Orca can inspect, interact with and screenshot browser pages. The headless Chromium provider does not offer Electron desktop computer use, browser profile import or live screencast; unsupported operations return explicit errors.
+
+Claude Code **2.1.325** and Codex **0.169.0** are included, with frozen npm integrity records and their license notices. Claude uses **AWS Bedrock**; Codex uses the **Accela AI gateway backed by Foundry**. The wrappers remove competing provider credentials from their launch environments. Claude's managed policy disables reporting, automatic updates and hosted plugin/skill sync, and denies plugin marketplaces. Codex's system requirements disable telemetry exporters, plugins and in-app updates; its wrapper disables analytics and startup update checks. Ordinary local tools, skills and Orca's trusted agent hooks remain available.
+
+On this Windows host, configure each provider using the existing organization sign-in:
+
+```powershell
+./config/docker/local/configure-runtimes.ps1 -Provider Codex
+./config/docker/local/configure-runtimes.ps1 -Provider Claude -AWSProfile 062518125967_Bedrock -AWSRegion us-east-2
+```
+
+The command checks the selected AWS identity and exports only its temporary session credentials, or requests only the Accela gateway access token from Azure CLI. The Codex setup also copies the explicitly selected Accela model catalog (default `~/.codex/accela-models.json`) to private `/data/codex-models.json` storage, avoiding the gateway's incompatible automatic catalog response. This catalog is never included in the image or fork. It transfers them over the container process's standard input, without putting secrets in arguments, build layers, Git or host mounts. `/data/runtime-credentials.json` is a private **0600 plaintext credential file** in the single-owner volume. Terminals and agents run as that owner and can read it; this is not credential isolation from user code. Codex tokens expire and the helper rejects expired tokens. AWS expiry is honored when its credential export includes an expiration; Bedrock enforces session expiry otherwise. Rerun the command after refreshing the selected sign-in. There is no unattended credential renewal added here.
+
+Defaults are `us.anthropic.claude-opus-5-5` in Bedrock `us-east-2`, and `gpt-6.1-sol-global` through `https://ai-support-apim-vnet.azure-api.net/openai`. The script accepts explicit region, model and organization gateway overrides. The AWS account must already permit the chosen inference profile; the setup command does not subscribe to models or accept marketplace terms. Bedrock does not offer Claude's native WebSearch tool; Orca's sandboxed browser remains available for QA tasks.
+
+SDK/provider task traffic is separate from disabled vendor reporting. CLI policies cover the supported reporting/export paths, not arbitrary network traffic from user code or third-party tools. Do not inject the host's full environment, credential directory or browser profile into the container.
+
+## Verification and limits
+
+See `VERIFICATION.md` for the exact build, test and running-container evidence. The image health check proves HTTP asset serving; pairing, terminals, file persistence and browser operation require functional checks as well.
+
+This is a bounded hardening review, not a claim that all security/privacy defects have been eliminated. Terminals and configured agents intentionally execute user code and may access the network. There is no blanket outbound firewall, per-tenant isolation, malware detection or organization authentication added here. Local browser testing checks actual initial requests; it is not an exhaustive audit of opaque third-party binaries. Future network hosting needs HTTPS, deployment-specific authentication/access policy, egress rules, storage backup and isolation review.
+
+The read-only image prevents managed-server stop-file writes; normal container stop/restart uses signals. Vendor auto-updates and executable plugin/cloud paths remain unavailable. Keep current OS/package patches through reviewed image rebuilds.

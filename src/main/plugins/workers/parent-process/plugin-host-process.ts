@@ -1,3 +1,4 @@
+import { assertExecutablePluginsAllowed } from '../../plugin-execution-policy'
 import { fork, type ChildProcess } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
@@ -44,6 +45,7 @@ export function resolvePluginHostEntryPath(appPath: string, isPackaged: boolean)
 export async function startPluginWorker(
   options: StartPluginWorkerOptions
 ): Promise<PluginWorkerHandle> {
+  assertExecutablePluginsAllowed()
   const { pluginId, rootDir, mainEntry, entryPath, log } = options
   const readyTimeoutMs = options.readyTimeoutMs ?? PLUGIN_WORKER_READY_TIMEOUT_MS
   const invokeTimeoutMs = options.invokeTimeoutMs ?? PLUGIN_WORKER_INVOKE_TIMEOUT_MS

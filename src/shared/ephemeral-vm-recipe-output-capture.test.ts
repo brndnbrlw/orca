@@ -1,3 +1,4 @@
+import './testing/upstream-cloud-recipes.test-fixture'
 import { EventEmitter } from 'node:events'
 import { PassThrough } from 'node:stream'
 import { setImmediate } from 'node:timers/promises'

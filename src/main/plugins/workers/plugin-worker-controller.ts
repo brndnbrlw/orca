@@ -1,3 +1,4 @@
+import { assertExecutablePluginsAllowed } from '../plugin-execution-policy'
 import type { PluginCapabilityKind } from '../../../shared/plugins/capabilities/plugin-capabilities'
 import type { PluginHostCallOutcome } from '../../../shared/plugins/frames/plugin-protocol'
 import type { ValidDiscoveredPlugin } from '../plugin-discovery'
@@ -76,6 +77,7 @@ export class PluginWorkerController {
       throw new Error(`plugin ${plugin.pluginKey} has no worker entry`)
     }
     try {
+      assertExecutablePluginsAllowed()
       const capabilities = this.options.capabilities(plugin.pluginKey)
       if (!capabilities) {
         throw new Error(`plugin ${plugin.pluginKey} is no longer approved`)

@@ -1,3 +1,4 @@
+import { assertCloudRecipesAllowed } from './ephemeral-vm-recipe-policy'
 import type { spawn } from 'node:child_process'
 import { randomUUID } from 'node:crypto'
 import { statSync } from 'node:fs'
@@ -107,6 +108,7 @@ export type EphemeralVmRecipeResumeResult =
 export async function runEphemeralVmRecipeStart(
   args: EphemeralVmRecipeStartArgs
 ): Promise<EphemeralVmRecipeStartResult> {
+  assertCloudRecipesAllowed()
   validateRepoPath(args.repoPath)
   const context = buildRecipeContext(args.recipe, args.repoPath, args.context)
   const processResult = await runRecipeStep(args, 'create', args.recipe.create, context)
@@ -149,6 +151,7 @@ export async function runEphemeralVmRecipeStart(
 export async function runEphemeralVmRecipeCleanup(
   args: EphemeralVmRecipeCleanupArgs
 ): Promise<EphemeralVmRecipeCleanupResult> {
+  assertCloudRecipesAllowed()
   validateRepoPath(args.repoPath)
   if (args.recipe.destroyDisabled || !args.recipe.destroy) {
     return { ok: true, skipped: true, stdout: '', stderr: '', exitCode: null, signal: null }
@@ -177,6 +180,7 @@ export async function runEphemeralVmRecipeCleanup(
 export async function runEphemeralVmRecipeSuspend(
   args: EphemeralVmRecipeLifecycleArgs
 ): Promise<EphemeralVmRecipeCleanupResult> {
+  assertCloudRecipesAllowed()
   validateRepoPath(args.repoPath)
   if (!args.recipe.suspend) {
     return { ok: true, skipped: true, stdout: '', stderr: '', exitCode: null, signal: null }
@@ -202,6 +206,7 @@ export async function runEphemeralVmRecipeSuspend(
 export async function runEphemeralVmRecipeResume(
   args: EphemeralVmRecipeLifecycleArgs
 ): Promise<EphemeralVmRecipeResumeResult> {
+  assertCloudRecipesAllowed()
   validateRepoPath(args.repoPath)
   if (!args.recipe.resume) {
     return {

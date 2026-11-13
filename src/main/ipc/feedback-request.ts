@@ -1,3 +1,4 @@
+import { ORCA_FORK_POLICY } from '../../shared/orca-fork-policy'
 import { net } from 'electron'
 import { appendFeedbackImagesToFormData } from './feedback-image-attachments'
 import type {
@@ -38,6 +39,9 @@ export async function postFeedback(
   timeoutMs = FEEDBACK_REQUEST_TIMEOUT_MS,
   readResponse?: (response: Response) => Promise<void>
 ): Promise<Response> {
+  if (!ORCA_FORK_POLICY.vendorServices) {
+    throw new Error('Sending feedback is disabled in this fork.')
+  }
   const controller = new AbortController()
   // Bound IPC even when the endpoint stays silent.
   const timeout = setTimeout(() => controller.abort(), timeoutMs)

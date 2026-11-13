@@ -1,3 +1,4 @@
+import './testing/upstream-cloud-recipes.test-fixture'
 import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'

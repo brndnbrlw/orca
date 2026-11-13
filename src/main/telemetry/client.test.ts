@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, type vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Store } from '../persistence/loading-store/store'
 import { track, trackAppOpenedOnce } from './client'
 import {
@@ -60,3 +60,13 @@ describe('track()', () => {
     expect(mock.capture.mock.calls[0]![0].event).toBe('app_opened')
   })
 })
+
+// Retain upstream transport mechanics under a test-only enabled policy.
+vi.mock('../../shared/orca-fork-policy', () => ({
+  ORCA_FORK_POLICY: Object.freeze({
+    vendorServices: true,
+    executablePlugins: false,
+    cloudRecipes: false,
+    browserCredentialImport: false
+  })
+}))

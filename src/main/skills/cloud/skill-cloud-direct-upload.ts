@@ -1,3 +1,4 @@
+import { ORCA_FORK_POLICY } from '../../../shared/orca-fork-policy'
 import { randomBytes } from 'node:crypto'
 import { createReadStream } from 'node:fs'
 import { stat } from 'node:fs/promises'
@@ -50,6 +51,9 @@ export async function uploadSkillPackageToSignedPolicy(input: {
   fetcher?: typeof fetch
   timeoutMs?: number
 }): Promise<void> {
+  if (!ORCA_FORK_POLICY.vendorServices) {
+    throw new Error('Hosted skill uploads are disabled in this fork.')
+  }
   const policyUrl = new URL(input.policy.url)
   if (policyUrl.protocol !== 'https:' || policyUrl.username || policyUrl.password) {
     throw new Error('skill-cloud-upload-url-invalid')

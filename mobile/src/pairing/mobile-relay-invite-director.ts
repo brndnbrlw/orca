@@ -1,3 +1,4 @@
+import { assertMobileRelayAllowed } from '../transport/relay/mobile-relay-fork-policy'
 import type { PairingRelay } from '../../../src/shared/remote-runtime/pairing/mobile-relay-pairing-offer'
 import { relayConnectWebSocketUrl } from '../transport/relay/mobile-relay-connect-url'
 import { RelayMovedSchema } from '../../../src/shared/remote-runtime/relay/mobile-relay-phone-protocol'
@@ -23,11 +24,12 @@ export class RelayDirectorMoveNotNewerError extends Error {
   }
 }
 
-export function resolvePairingInviteThroughDirector(args: {
+export async function resolvePairingInviteThroughDirector(args: {
   relay: PairingRelay
   timeoutMs?: number
   createSocket?: (url: string) => WebSocket
 }): Promise<PairingRelay> {
+  assertMobileRelayAllowed()
   const socket = (args.createSocket ?? ((url) => new WebSocket(url)))(
     relayConnectWebSocketUrl(args.relay.directorUrl, args.relay.relayHostId)
   )

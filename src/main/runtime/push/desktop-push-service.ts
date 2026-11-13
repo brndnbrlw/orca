@@ -1,4 +1,5 @@
 // Push authenticates with host keys, independent of cloud sign-in; retain gateway registrations and durable cleanup for accountless hosts too.
+import { ORCA_FORK_POLICY } from '../../../shared/orca-fork-policy'
 import { randomUUID } from 'node:crypto'
 import type {
   MobilePushTestResult,
@@ -76,6 +77,9 @@ export class DesktopPushService {
 
   /** Returns null when the mobile runtime never came up, so there is nothing to push for. */
   static create(options: DesktopPushServiceOptions): DesktopPushService | null {
+    if (!ORCA_FORK_POLICY.vendorServices) {
+      return null
+    }
     const keypair = options.runtimeRpc.getE2EEKeypair()
     const registry = options.runtimeRpc.getDeviceRegistry()
     if (!keypair || !registry) {

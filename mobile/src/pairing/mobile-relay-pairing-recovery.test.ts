@@ -1,3 +1,4 @@
+import '../test-support/upstream-mobile-relay.test-fixture'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { MobileRelayCredentialBundle } from '../host-credentials/mobile-relay-credential-bundle'
 import { createMobileRelayPairingJournal } from './mobile-relay-pairing-journal'

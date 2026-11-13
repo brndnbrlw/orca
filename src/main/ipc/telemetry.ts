@@ -1,5 +1,6 @@
 // Treat renderer payloads as untrusted; track validates event schemas, while consent handlers narrow inputs, cap writes and derive provenance.
 
+import { ORCA_FORK_POLICY } from '../../shared/orca-fork-policy'
 import { BrowserWindow, ipcMain } from 'electron'
 import { consumeConsentMutationToken } from '../telemetry/burst-cap'
 import {
@@ -64,6 +65,9 @@ export function registerTelemetryHandlers(store: Store): void {
   storeRef = store
 
   ipcMain.handle('telemetry:track', (event, name: unknown, props: unknown): boolean => {
+    if (!ORCA_FORK_POLICY.vendorServices) {
+      return false
+    }
     if (typeof name !== 'string') {
       return false
     }
@@ -114,6 +118,9 @@ export function registerTelemetryHandlers(store: Store): void {
 
   // Privacy UI cannot directly read main's environment-based telemetry blocks.
   ipcMain.handle('telemetry:getConsentState', (): ConsentState => {
+    if (!ORCA_FORK_POLICY.vendorServices) {
+      return { effective: 'disabled', reason: 'orca_disabled' }
+    }
     if (!storeRef) {
       // Missing settings cannot establish enabled consent.
       return { effective: 'pending_banner' }

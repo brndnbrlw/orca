@@ -1,0 +1,24 @@
+services:
+  orca:
+    image: localhost/orca:local
+    container_name: orca
+    ports:
+      - '127.0.0.1:6768:6768'
+    volumes:
+      - orca-data:/data
+    read_only: true
+    tmpfs:
+      - /tmp:rw,nosuid,nodev,size=512m
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+      - seccomp=./chromium-seccomp.json
+    pids_limit: 512
+    mem_limit: 4g
+    cpus: 2
+    shm_size: 256m
+    stop_grace_period: 30s
+    restart: unless-stopped
+volumes:
+  orca-data:

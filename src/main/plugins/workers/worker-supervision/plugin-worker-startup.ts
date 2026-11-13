@@ -1,3 +1,4 @@
+import { assertExecutablePluginsAllowed } from '../../plugin-execution-policy'
 import type { PluginCapabilityKind } from '../../../../shared/plugins/capabilities/plugin-capabilities'
 import type { PluginWorkerPanelPost } from '../../../../shared/plugins/workers/plugin-panel-bridge-protocol'
 import { startPluginWorker } from '../parent-process/plugin-host-process'
@@ -66,6 +67,7 @@ export async function startPluginWorkerAttempt(options: {
   verifyBeforeSpawn?: () => Promise<void>
   onExit: (worker: StartedPluginWorker, code: number | null) => void
 }): Promise<StartedPluginWorker> {
+  assertExecutablePluginsAllowed()
   const lease = await options.slots.acquire(options.signal)
   let handle: PluginWorkerHandle | null = null
   let retained = false

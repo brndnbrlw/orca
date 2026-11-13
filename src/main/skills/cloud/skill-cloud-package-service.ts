@@ -1,3 +1,4 @@
+import { ORCA_FORK_POLICY } from '../../../shared/orca-fork-policy'
 import { createHash, randomUUID } from 'node:crypto'
 import type {
   SkillCloudDownloadGrant,
@@ -298,6 +299,9 @@ export class SkillCloudService {
     options: SkillCloudOptions,
     operation: (apiUrl: string) => Promise<T>
   ): Promise<SkillCloudOperation<T>> {
+    if (!ORCA_FORK_POLICY.vendorServices) {
+      return { status: 'unconfigured', message: 'Hosted skills are disabled in this fork.' }
+    }
     const value = await operation(resolveArtifactCloudApiUrl(options.apiUrl))
     return { status: 'ok', value }
   }

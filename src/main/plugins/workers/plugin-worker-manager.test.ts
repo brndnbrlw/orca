@@ -1,3 +1,4 @@
+import '../../../shared/testing/upstream-plugin-execution.test-fixture'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { PluginWorkerHandle } from './parent-process/plugin-host-process-types'
 import { PluginWorkerManager } from './plugin-worker-manager'

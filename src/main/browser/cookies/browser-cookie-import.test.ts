@@ -1,3 +1,4 @@
+import '../../../shared/testing/upstream-browser-credential-import.test-fixture'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { CookiesGetFilter } from 'electron'
 import type * as NodeFs from 'node:fs'

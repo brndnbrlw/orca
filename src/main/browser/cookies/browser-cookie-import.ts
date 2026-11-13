@@ -1,3 +1,4 @@
+import { browserCredentialImportDenial } from './policy/browser-credential-import-policy'
 import type { BrowserCookieImportResult } from '../../../shared/browser-workspace-types'
 import type { DetectedBrowser } from './sources/browser-cookie-source-profiles'
 import type { CookieImportOptions } from './imports/cookie-import-contracts'
@@ -10,6 +11,10 @@ export async function importCookiesFromBrowser(
   targetPartition: string,
   options: CookieImportOptions = {}
 ): Promise<BrowserCookieImportResult> {
+  const denied = browserCredentialImportDenial()
+  if (denied) {
+    return denied
+  }
   if (browser.family === 'firefox') {
     return importCookiesFromFirefox(browser, targetPartition, options)
   }

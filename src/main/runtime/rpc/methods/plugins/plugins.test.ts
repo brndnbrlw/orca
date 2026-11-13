@@ -1,3 +1,4 @@
+import '../../../../../shared/testing/upstream-plugin-execution.test-fixture'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { eraseRpcMethods, type RpcContext, type RpcMethod } from '../../core'
 import type { PluginService } from '../../../../plugins/plugin-service'

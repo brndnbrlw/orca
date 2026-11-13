@@ -1,3 +1,4 @@
+import './testing/upstream-cloud-recipes.test-fixture'
 import type * as ChildProcess from 'node:child_process'
 import { EventEmitter } from 'node:events'
 import { PassThrough } from 'node:stream'

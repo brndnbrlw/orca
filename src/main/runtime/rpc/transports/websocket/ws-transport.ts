@@ -1,3 +1,4 @@
+import { admitWebRequest } from './web-request-admission'
 // WebSocket transport letting mobile clients reach the Orca runtime over LAN (ws://); auth is per-device tokens, and E2EE runs above this layer.
 import { createServer as createHttpServer, type Server as HttpServer } from 'node:http'
 import type { Socket } from 'node:net'
@@ -222,9 +223,16 @@ export class WebSocketTransport implements RpcTransport {
   private async tryListen(port: number): Promise<void> {
     await assertPortNotShadowingListener(this.host, port)
     // Without an HTTP request listener, plain HTTP hangs instead of receiving 404 (#30100).
-    const httpServer = createHttpServer(
-      this.staticRoot ? createStaticWebClientHandler(this.staticRoot) : answerWithoutWebClient
-    )
+    const answer = this.staticRoot
+      ? createStaticWebClientHandler(this.staticRoot)
+      : answerWithoutWebClient
+    const httpServer = createHttpServer((request, response) => {
+      if (!admitWebRequest(request)) {
+        response.writeHead(403).end()
+        return
+      }
+      answer(request, response)
+    })
 
     await new Promise<void>((resolve, reject) => {
       httpServer.once('error', reject)
@@ -247,7 +255,8 @@ export class WebSocketTransport implements RpcTransport {
 
     const wss = new WebSocketServer({
       server: httpServer,
-      maxPayload: WEBSOCKET_TRANSPORT_MAX_MESSAGE_BYTES
+      maxPayload: WEBSOCKET_TRANSPORT_MAX_MESSAGE_BYTES,
+      verifyClient: ({ req }, done) => done(admitWebRequest(req), 403, 'Forbidden')
     })
 
     wss.on('connection', (ws, request) => {

@@ -1,3 +1,4 @@
+import { browserCredentialImportDenial } from '../policy/browser-credential-import-policy'
 import { session } from 'electron'
 import { browserCookieImportFailure } from '../../../../shared/browser-cookie-import-failure-copy'
 import { existsSync } from 'node:fs'
@@ -20,6 +21,10 @@ export async function importChromiumCookies(
   targetPartition: string,
   options: CookieImportOptions = {}
 ): Promise<BrowserCookieImportResult> {
+  const denied = browserCredentialImportDenial()
+  if (denied) {
+    return denied
+  }
   diag(`importCookiesFromBrowser: browser=${browser.family} partition="${targetPartition}"`)
   if (!existsSync(browser.cookiesPath)) {
     diag(`  cookies DB not found: ${browser.cookiesPath}`)

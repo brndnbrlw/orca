@@ -1,3 +1,4 @@
+import { assertMobileRelayAllowed } from './mobile-relay-fork-policy'
 import type { MobileRelayRpcSession } from './mobile-relay-rpc-session-contract'
 import {
   throwIfSignalAborted,
@@ -49,6 +50,7 @@ export function connectMobileRelayRpcSession(args: {
   onHostCloseReason?: (reason: RelayHostCloseReason) => void
   onLog?: ConnectionLogSink
 }): MobileRelayRpcSession {
+  assertMobileRelayAllowed()
   const requestTimeoutMs = args.requestTimeoutMs ?? 30_000
   const pending = new RelayPendingRequests()
   const stateListeners = new Set<(state: ConnectionState) => void>()

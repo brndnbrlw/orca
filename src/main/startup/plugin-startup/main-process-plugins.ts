@@ -1,3 +1,5 @@
+import { bindDesktopPluginChangedEvents } from './main-process-plugin-change-events'
+import { ORCA_FORK_POLICY } from '../../../shared/orca-fork-policy'
 import { join } from 'node:path'
 import { PluginImageCache } from '../../plugins/plugin-image-cache'
 import { installPluginImageProtocolHandler } from '../../plugins/plugin-image-protocol'
@@ -29,10 +31,6 @@ import {
   normalizePluginIdList
 } from '../../../shared/plugins/approval/plugin-consent-state'
 import { projectPluginAgentStatusChangedPayload } from '../../plugins/plugin-agent-status-event'
-import { setMainPluginLanguagePacks, setMainUiLanguage } from '../../i18n/main-i18n'
-import { isUsablePluginLanguagePack } from '../../../shared/plugins/languages/plugin-language-pack-coverage'
-import { rebuildAppMenu } from '../../menu/register-app-menu'
-import { rebuildSystemTrayMenu } from '../../tray/system-tray'
 import { logStartupMilestone } from '../diagnostics/startup-diagnostics'
 import { agentHookServer } from '../../agent-hooks/server/agent-hook-server'
 import {
@@ -67,6 +65,7 @@ export async function initializeMainProcessPlugins(runtime: OrcaRuntimeService):
     pluginsDataDir: getPluginsDataDir(app.getPath('userData')),
     // Why packaged only (like the safety list): dev and e2e runs must not reach the network unasked.
     isFetchAllowed: () =>
+      ORCA_FORK_POLICY.vendorServices &&
       store.getSettings().pluginSystemEnabled === true &&
       (app.isPackaged || process.env.ORCA_PLUGIN_INSTALL_STATS === '1')
   })
@@ -87,6 +86,9 @@ export async function initializeMainProcessPlugins(runtime: OrcaRuntimeService):
     hostVersion: pluginHostVersion(app.getVersion())
   })
   const requestOfficialMarketplaceSeed = (): void => {
+    if (!ORCA_FORK_POLICY.vendorServices) {
+      return
+    }
     if (store.getSettings().pluginSystemEnabled !== true) {
       return
     }
@@ -134,7 +136,11 @@ export async function initializeMainProcessPlugins(runtime: OrcaRuntimeService):
     firstSeen: new PluginReleaseFirstSeenStore(getPluginsDataDir(app.getPath('userData'))),
     isEnabled: () => {
       const settings = store.getSettings()
-      return settings.pluginSystemEnabled === true && isPluginAutoUpdateOn(settings)
+      return (
+        ORCA_FORK_POLICY.vendorServices &&
+        settings.pluginSystemEnabled === true &&
+        isPluginAutoUpdateOn(settings)
+      )
     },
     refreshCatalogs: () => state.pluginMarketplaceService?.refreshAll() ?? Promise.resolve(),
     refreshKillList: () => state.pluginKillListService?.refresh() ?? Promise.resolve(),
@@ -167,7 +173,9 @@ export async function initializeMainProcessPlugins(runtime: OrcaRuntimeService):
     isKillListed: (pluginKey) => Boolean(state.pluginKillListService?.find(pluginKey))
   })
   // Why packaged only (like the safety list): dev and e2e runs must not update fixtures unasked.
-  const autoUpdateScheduled = app.isPackaged || process.env.ORCA_PLUGIN_AUTO_UPDATE === '1'
+  const autoUpdateScheduled =
+    ORCA_FORK_POLICY.vendorServices &&
+    (app.isPackaged || process.env.ORCA_PLUGIN_AUTO_UPDATE === '1')
   const syncPluginAutoUpdate = (runNow: boolean): void => {
     if (!autoUpdateScheduled) {
       return
@@ -222,14 +230,18 @@ export async function initializeMainProcessPlugins(runtime: OrcaRuntimeService):
       requestBundledPluginBootstrap()
       requestOfficialMarketplaceSeed()
     }
-    if (app.isPackaged && updates.pluginSystemEnabled === true) {
+    if (ORCA_FORK_POLICY.vendorServices && app.isPackaged && updates.pluginSystemEnabled === true) {
       void state.pluginKillListService
         ?.refresh()
         .catch((error) =>
           console.warn('[plugins] failed to refresh plugin safety list; using cached state:', error)
         )
     }
-    if (app.isPackaged && updates.pluginSystemEnabled !== undefined) {
+    if (
+      ORCA_FORK_POLICY.vendorServices &&
+      app.isPackaged &&
+      updates.pluginSystemEnabled !== undefined
+    ) {
       state.pluginKillListService?.syncPeriodicRefresh(updates.pluginSystemEnabled === true)
     }
     if (updates.pluginSystemEnabled !== undefined || updates.pluginUpdatePolicy !== undefined) {
@@ -261,7 +273,11 @@ export async function initializeMainProcessPlugins(runtime: OrcaRuntimeService):
       setTimeout(() => syncPluginAutoUpdate(true), PLUGIN_AUTO_UPDATE_STARTUP_DELAY_MS).unref?.()
     })
     .catch((error) => console.warn('[plugins] failed to initialize plugin service:', error))
-  if (app.isPackaged && store.getSettings().pluginSystemEnabled === true) {
+  if (
+    ORCA_FORK_POLICY.vendorServices &&
+    app.isPackaged &&
+    store.getSettings().pluginSystemEnabled === true
+  ) {
     void state.pluginKillListService
       .refresh()
       .catch((error) =>
@@ -269,26 +285,7 @@ export async function initializeMainProcessPlugins(runtime: OrcaRuntimeService):
       )
     state.pluginKillListService.syncPeriodicRefresh(true)
   }
-  state.pluginService.onChanged((event) => {
-    if (
-      event.contentPacksChanged &&
-      setMainPluginLanguagePacks(
-        (state.pluginService?.contentPacks.languagePacks.list() ?? []).filter(
-          isUsablePluginLanguagePack
-        )
-      )
-    ) {
-      void setMainUiLanguage(store.getSettings().uiLanguage).then(() => {
-        rebuildAppMenu()
-        rebuildSystemTrayMenu()
-      })
-    }
-    for (const window of BrowserWindow.getAllWindows()) {
-      if (!window.isDestroyed()) {
-        window.webContents.send('plugins:changed', event)
-      }
-    }
-  })
+  bindDesktopPluginChangedEvents(store, pluginService, () => state.pluginService)
   requestBundledPluginBootstrap()
   setTimeout(() => {
     if (net.isOnline()) {

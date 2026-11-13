@@ -1,3 +1,4 @@
+import { ORCA_FORK_POLICY } from '../../shared/orca-fork-policy'
 import { URL } from 'node:url'
 import { MAX_BUNDLE_BYTES } from './diagnostic-bundle-limits'
 import { postBodyForJson, postJsonForJson } from './diagnostic-upload-http'
@@ -32,6 +33,9 @@ type UploadResponse = {
 }
 
 export async function uploadBundle(opts: UploadBundleOptions): Promise<UploadBundleResult> {
+  if (!ORCA_FORK_POLICY.vendorServices) {
+    throw new Error('Diagnostic uploads are disabled in this fork.')
+  }
   const bytes = Buffer.byteLength(opts.payload)
   if (bytes > MAX_BUNDLE_BYTES) {
     throw new Error(`bundle exceeds 4 MiB cap (${bytes} bytes)`)
@@ -79,6 +83,9 @@ export async function uploadBundle(opts: UploadBundleOptions): Promise<UploadBun
 }
 
 export async function deleteBundle(opts: DeleteBundleOptions): Promise<void> {
+  if (!ORCA_FORK_POLICY.vendorServices) {
+    throw new Error('Diagnostic uploads are disabled in this fork.')
+  }
   const endpoint = resolveDeleteEndpoint(opts.tokenEndpoint, opts.ticketId)
   await postJsonForJson(endpoint, {}, TOKEN_REQUEST_TIMEOUT_MS)
 }

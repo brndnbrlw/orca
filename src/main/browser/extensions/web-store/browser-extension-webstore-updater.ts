@@ -1,3 +1,4 @@
+import { ORCA_FORK_POLICY } from '../../../../shared/orca-fork-policy'
 import { net } from 'electron'
 import { randomUUID } from 'node:crypto'
 import { readFile } from 'node:fs/promises'
@@ -269,7 +270,7 @@ export async function reviewHeldBrowserExtensionUpdate(
 let checking = false
 
 export async function checkForBrowserExtensionUpdates(): Promise<void> {
-  if (checking || !isBrowserExtensionSupportEnabled()) {
+  if (!ORCA_FORK_POLICY.vendorServices || checking || !isBrowserExtensionSupportEnabled()) {
     return
   }
   checking = true
@@ -315,7 +316,7 @@ let started = false
 
 /** Checks shortly after launch and then every five hours, off the startup path. */
 export function startBrowserExtensionUpdateChecks(): void {
-  if (started) {
+  if (!ORCA_FORK_POLICY.vendorServices || started) {
     return
   }
   started = true

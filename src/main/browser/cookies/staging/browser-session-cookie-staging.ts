@@ -1,3 +1,4 @@
+import { browserCredentialImportDenial } from '../policy/browser-credential-import-policy'
 import { app } from 'electron'
 import { copyFileSync, existsSync, mkdirSync, statSync, unlinkSync } from 'node:fs'
 import { join } from 'node:path'
@@ -66,6 +67,9 @@ export function applyPendingBrowserCookieImports({
   defaultPartition,
   activeOrcaProfileId
 }: PendingCookieImportTarget & { activeOrcaProfileId: string }): void {
+  if (browserCredentialImportDenial()) {
+    return
+  }
   try {
     const meta = loadBrowserSessionMeta(resolveMetadataPath, defaultPartition)
     const pendingEntries = Object.entries(meta.pendingCookieImports)

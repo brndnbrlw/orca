@@ -1,3 +1,4 @@
+import { browserCredentialImportDenial } from '../policy/browser-credential-import-policy'
 import type {
   BrowserCookieImportResult,
   BrowserCookieImportSummary
@@ -14,6 +15,10 @@ export async function finalizeChromiumCookieImport(
   context: ChromiumImportContext,
   targetPartition: string
 ): Promise<BrowserCookieImportResult> {
+  const denied = browserCredentialImportDenial()
+  if (denied) {
+    return denied
+  }
   if (context.decryptedCookies.length === 0) {
     const zeroPathWarning = context.undecryptableWarning
     return {

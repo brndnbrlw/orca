@@ -1,3 +1,4 @@
+import { ORCA_FORK_POLICY } from '../../../shared/orca-fork-policy'
 import {
   findKilledPlugin,
   isPluginKillListTooFarInFuture,
@@ -72,6 +73,11 @@ export class PluginKillListService {
   }
 
   refresh(): Promise<PluginKillList> {
+    if (!ORCA_FORK_POLICY.vendorServices) {
+      return Promise.reject(
+        new Error('Vendor plugin safety-list refresh is disabled in this fork.')
+      )
+    }
     const refresh = this.refreshChain
       .catch(() => this.currentList ?? emptyKillList())
       .then(() => this.performRefresh())
@@ -103,7 +109,7 @@ export class PluginKillListService {
 
   /** Keeps a background refresh running while plugins are on; stops it when they are off. */
   syncPeriodicRefresh(enabled: boolean, intervalMs = PLUGIN_KILL_LIST_REFRESH_INTERVAL_MS): void {
-    if (!enabled) {
+    if (!ORCA_FORK_POLICY.vendorServices || !enabled) {
       this.dispose()
       return
     }
@@ -156,6 +162,9 @@ export async function fetchPluginKillList(
   fetcher: typeof fetch = fetch,
   url = PLUGIN_KILL_LIST_URL
 ): Promise<PluginKillList> {
+  if (!ORCA_FORK_POLICY.vendorServices) {
+    throw new Error('Vendor plugin safety-list refresh is disabled in this fork.')
+  }
   const json = await fetchBoundedJson(fetcher, url, {
     label: 'plugin kill-list',
     maxBytes: PLUGIN_KILL_LIST_DOWNLOAD_LIMIT,

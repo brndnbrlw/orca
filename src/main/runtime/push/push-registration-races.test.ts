@@ -251,3 +251,13 @@ it('finishes the current snapshot on stop and leaves later work durable for rest
   expect(h.outbox.pending()).toEqual([])
   h.service.stop()
 })
+
+// Retain upstream transport mechanics under a test-only enabled policy.
+vi.mock('../../../shared/orca-fork-policy', () => ({
+  ORCA_FORK_POLICY: Object.freeze({
+    vendorServices: true,
+    executablePlugins: false,
+    cloudRecipes: false,
+    browserCredentialImport: false
+  })
+}))

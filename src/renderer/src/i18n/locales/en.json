@@ -21092,7 +21092,10 @@
         "started_one": "Kicked off {{count}} subagent",
         "started_other": "Kicked off {{count}} subagents",
         "ran_one": "Ran {{count}} subagent",
-        "ran_other": "Ran {{count}} subagents"
+        "ran_other": "Ran {{count}} subagents",
+        "open": "Open subagent",
+        "backToMain": "Back to main agent",
+        "mainAgent": "Main agent"
       },
       "rewind": {
         "unsupported": "This chat can't go back to an earlier message.",

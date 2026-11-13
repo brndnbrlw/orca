@@ -1,0 +1,15 @@
+{
+  "awsCredentialExport": "/usr/bin/python3 /opt/orca/agent-runtimes/runtime-auth.py claude-credentials",
+  "strictKnownMarketplaces": [],
+  "syncClaudeAiPlugins": false,
+  "syncClaudeAiSkills": false,
+  "env": {
+    "CLAUDE_CODE_USE_BEDROCK": "1",
+    "CLAUDE_CODE_USE_FOUNDRY": "",
+    "CLAUDE_CODE_USE_VERTEX": "",
+    "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
+    "DISABLE_TELEMETRY": "1",
+    "DISABLE_ERROR_REPORTING": "1",
+    "DISABLE_AUTOUPDATER": "1"
+  }
+}

@@ -9,7 +9,7 @@ This is an independent fork of [stablyai/orca](https://github.com/stablyai/orca)
 - New Claude and Codex chats and terminals default to **Ask**. Explicit user choices, including Full Access, are preserved. These approvals supplement the container boundary; they do not make arbitrary code trustworthy.
 - HTTP/WebSocket admission checks Host and Origin. Static assets use real-path containment and live on the read-only image. Pairing is authenticated, and owner-generated unused offers expire after five minutes.
 - The container runs as `node` (UID 1000), has no host credential/filesystem/socket mounts, drops all Linux capabilities, uses no-new-privileges and a read-only root filesystem, and publishes only `127.0.0.1:6768`. Memory, CPUs, processes and shared memory are bounded.
-- The pinned agent-browser driver normally injects `--no-sandbox`. The immutable Chromium wrapper removes that driver default and rejects other insecure browser flags. Chromium's own namespace and Seccomp-BPF sandboxes remain enabled. `chromium-seccomp.json` derives from Podman 6.2.0's containers-common 0.70.0 profile, with only `chroot` made unconditional so Chromium can enter its private unprivileged user namespace. Container capabilities remain zero. The original Apache-2.0 license is included in `containers-common-LICENSE`.
+- The pinned agent-browser driver normally injects `--no-sandbox`. The immutable Chromium wrapper removes that driver default and rejects other insecure browser flags. Chromium's own namespace and Seccomp-BPF sandboxes remain enabled. `chromium-seccomp.json` derives from Podman 6.2.0's containers-common 0.70.0 profile, with only `chroot` made unconditional so Chromium can enter its private unprivileged user namespace. The main browser and renderers have zero effective capabilities; Chromium uses a private namespace setup broker internally. The original Apache-2.0 license is included in `containers-common-LICENSE`.
 
 ## Build
 
@@ -65,7 +65,20 @@ podman exec orca orca snapshot --worktree path:/data/workspaces/demo
 
 Bash, Python 3, Git and sandboxed Chromium are installed. Orca can inspect, interact with and screenshot browser pages. The headless Chromium provider does not offer Electron desktop computer use, browser profile import or live screencast; unsupported operations return explicit errors.
 
-Native Claude/Codex integration is retained. Their separately installed CLIs and user-selected provider credentials are still needed for actual model work; paid inference is not part of this verification. SDK/provider traffic for tasks is separate from Orca's disabled vendor reporting. Do not inject your host's full environment, credential directory or browser profile into the container.
+Claude Code **2.1.325** and Codex **0.169.0** are included, with frozen npm integrity records and their license notices. Claude uses **AWS Bedrock**; Codex uses the **Accela AI gateway backed by Foundry**. The wrappers remove competing provider credentials from their launch environments. Claude's managed policy disables reporting, automatic updates and hosted plugin/skill sync, and denies plugin marketplaces. Codex's system requirements disable telemetry exporters, plugins and in-app updates; its wrapper disables analytics and startup update checks. Ordinary local tools, skills and Orca's trusted agent hooks remain available.
+
+On this Windows host, configure each provider using the existing organization sign-in:
+
+```powershell
+./config/docker/local/configure-runtimes.ps1 -Provider Codex
+./config/docker/local/configure-runtimes.ps1 -Provider Claude -AWSProfile 062518125967_Bedrock -AWSRegion us-east-2
+```
+
+The command checks the selected AWS identity and exports only its temporary session credentials, or requests only the Accela gateway access token from Azure CLI. The Codex setup also copies the explicitly selected Accela model catalog (default `~/.codex/accela-models.json`) to private `/data/codex-models.json` storage, avoiding the gateway's incompatible automatic catalog response. This catalog is never included in the image or fork. It transfers them over the container process's standard input, without putting secrets in arguments, build layers, Git or host mounts. `/data/runtime-credentials.json` is a private **0600 plaintext credential file** in the single-owner volume. Terminals and agents run as that owner and can read it; this is not credential isolation from user code. Codex tokens expire and the helper rejects expired tokens. AWS expiry is honored when its credential export includes an expiration; Bedrock enforces session expiry otherwise. Rerun the command after refreshing the selected sign-in. There is no unattended credential renewal added here.
+
+Defaults are `us.anthropic.claude-opus-5-5` in Bedrock `us-east-2`, and `gpt-6.1-sol-global` through `https://ai-support-apim-vnet.azure-api.net/openai`. The script accepts explicit region, model and organization gateway overrides. The AWS account must already permit the chosen inference profile; the setup command does not subscribe to models or accept marketplace terms. Bedrock does not offer Claude's native WebSearch tool; Orca's sandboxed browser remains available for QA tasks.
+
+SDK/provider task traffic is separate from disabled vendor reporting. CLI policies cover the supported reporting/export paths, not arbitrary network traffic from user code or third-party tools. Do not inject the host's full environment, credential directory or browser profile into the container.
 
 ## Verification and limits
 

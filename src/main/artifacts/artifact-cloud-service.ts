@@ -1,3 +1,4 @@
+import { ORCA_FORK_POLICY } from '../../shared/orca-fork-policy'
 import { createHash, randomUUID } from 'node:crypto'
 import type {
   ArtifactCloudOperation,
@@ -272,6 +273,9 @@ export class ArtifactCloudService {
     options: ArtifactCloudOptions,
     operation: (token: string, apiUrl: string, auth: ArtifactAuthContext) => Promise<T>
   ): Promise<ArtifactCloudOperation<T>> {
+    if (!ORCA_FORK_POLICY.vendorServices) {
+      return { status: 'unconfigured', message: 'Hosted artifacts are disabled in this fork.' }
+    }
     const apiUrl = resolveArtifactCloudApiUrl(options.apiUrl)
     const active = ensureActiveOrcaProfile(this.userDataPath)
     prepareArtifactCloudUse(active.profile, this.userDataPath)

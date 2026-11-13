@@ -1,3 +1,4 @@
+import { ORCA_FORK_POLICY as policy } from '../../../shared/orca-fork-policy'
 import {
   OFFICIAL_MARKETPLACE_GIT_SOURCE,
   isOfficialMarketplaceGitSource,
@@ -126,22 +127,22 @@ export class PluginMarketplaceService {
   }
 
   seedOfficialSource(): Promise<PluginMarketplaceSourceState> {
-    this.officialSeedRequested = true
-    if (!this.officialSeedPromise) {
-      const seed = this.performOfficialSeed()
-      this.officialSeedPromise = seed
-      void seed.catch(() => {
-        if (this.officialSeedPromise === seed) {
-          // Store/full-list failures must permit later seeding attempts.
-          this.officialSeedPromise = null
-        }
-      })
+    if (!policy.vendorServices) {
+      return Promise.reject(new Error('Vendor catalogs disabled'))
     }
+    this.officialSeedRequested = true
+    this.officialSeedPromise ??= this.performOfficialSeed().catch((error) => {
+      this.officialSeedPromise = null
+      throw error
+    })
     return this.officialSeedPromise
   }
 
   /** Adds the community catalog once by default; see CommunityMarketplaceSeed. */
   seedCommunitySource(now?: number): Promise<void> {
+    if (!policy.vendorServices) {
+      return Promise.reject(new Error('Vendor catalogs disabled'))
+    }
     return this.communitySeed.run(now)
   }
 

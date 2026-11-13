@@ -1,3 +1,4 @@
+import { ORCA_FORK_POLICY } from '../../../../shared/orca-fork-policy'
 import { ghExecFileAsync } from '../../../git/command-runner/hosted-cli/gh-exec-file'
 import { acquire, release } from '../../execution/github-operation-slots'
 import { runAsDefaultWslCliUserAct } from '../../../git/command-runner/hosted-cli/default-wsl-cli-fallback'
@@ -10,6 +11,9 @@ let inFlightStarCheck: Promise<boolean | null> | null = null
 
 /** null means the star state could not be determined. */
 export function checkOrcaStarred(): Promise<boolean | null> {
+  if (!ORCA_FORK_POLICY.vendorServices) {
+    return Promise.resolve(null)
+  }
   // Independent UI callers share one probe so optional star prompts cannot exhaust GitHub admission.
   inFlightStarCheck ??= runOrcaStarredCheck().finally(() => {
     inFlightStarCheck = null

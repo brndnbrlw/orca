@@ -1,5 +1,6 @@
 // Centralize runtime consent precedence. Environment/CI overrides never mutate persisted preference, so removing them restores user intent.
 
+import { ORCA_FORK_POLICY } from '../../shared/orca-fork-policy'
 import type { GlobalSettings } from '../../shared/global-settings-types'
 import type { TelemetryConsentState } from '../../shared/telemetry-consent-types'
 
@@ -50,6 +51,9 @@ export function _resetMisconfigWarnCacheForTests(): void {
 }
 
 function resolveEnvOverride(): ConsentState | null {
+  if (!ORCA_FORK_POLICY.vendorServices) {
+    return { effective: 'disabled', reason: 'orca_disabled' }
+  }
   if (isEnvVarTruthy('DO_NOT_TRACK')) {
     return { effective: 'disabled', reason: 'do_not_track' }
   }

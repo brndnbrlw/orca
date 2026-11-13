@@ -137,14 +137,22 @@ export async function createOwnerPairingOffer(
   params: PairingCreateOfferParams,
   lookup?: DefaultRouteInterfaceLookup
 ): Promise<PairingCreateOfferResult> {
+  if (params.relay) {
+    return {
+      available: false,
+      reason: 'fork_policy',
+      guidance: 'Hosted relay is disabled in this Orca fork.'
+    }
+  }
   if (params.scope === 'mobile') {
     const offer = await requestMobilePairingOffer(
       server,
       {
         address: params.address,
-        // A headless host has no Relay; Relay stays an explicit opt-in here as on the desktop.
-        connectionMode: params.relay ? 'automatic' : 'local-only',
-        rotate: params.rotate
+        // Hosted relay is unavailable; preserve direct local pairing.
+        connectionMode: 'local-only',
+        rotate: params.rotate,
+        offerTtlMs: 5 * 60_000
       },
       lookup
     )
@@ -167,6 +175,13 @@ export async function createOwnerPairingOffer(
     {
       address: params.address,
       rotate: params.rotate,
+      reach:
+        params.address &&
+        classifyRemotePairingHostname(resolveAdvertisedPairingHostname(params.address) ?? '') ===
+          'loopback'
+          ? 'this-computer'
+          : 'network',
+      offerTtlMs: 5 * 60_000,
       grants: params.grantDesktopControl ? ['desktop-control'] : []
     },
     lookup

@@ -1,5 +1,6 @@
+import { admitWebRequest } from './web-request-admission'
 import { createReadStream } from 'node:fs'
-import { stat } from 'node:fs/promises'
+import { realpath, stat } from 'node:fs/promises'
 import type { IncomingMessage, RequestListener, ServerResponse } from 'node:http'
 import { basename, extname, isAbsolute, posix, relative, resolve } from 'node:path'
 import { readBundledWebClientFiles } from '../../../../../shared/bundled-web-client-manifest'
@@ -37,6 +38,10 @@ export function createStaticWebClientHandler(staticRoot: string): RequestListene
     return answerWithoutWebClient
   }
   return (request, response) => {
+    if (!admitWebRequest(request)) {
+      writeHttpStatus(response, 403)
+      return
+    }
     void handleStaticRequest(resolvedRoot, files, request, response)
   }
 }
@@ -74,8 +79,17 @@ async function handleStaticRequest(
   }
 
   let fileStat
+  let canonicalPath: string
   try {
-    fileStat = await stat(absolutePath)
+    const canonicalRoot = await realpath(staticRoot)
+    canonicalPath = await realpath(absolutePath)
+    const containedPath = relative(canonicalRoot, canonicalPath)
+    if (containedPath === '' || containedPath.startsWith('..') || isAbsolute(containedPath)) {
+      writeHttpStatus(response, 404)
+      return
+    }
+    // Writable roots can race realpath/open; production assets and their ancestors must be immutable.
+    fileStat = await stat(canonicalPath)
   } catch {
     writeHttpStatus(response, 404)
     return
@@ -103,7 +117,7 @@ async function handleStaticRequest(
     return
   }
 
-  const stream = createReadStream(absolutePath)
+  const stream = createReadStream(canonicalPath)
   const stopReading = (): void => {
     stream.destroy()
   }

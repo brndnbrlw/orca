@@ -1,3 +1,4 @@
+import { ORCA_FORK_POLICY } from '../../../../src/shared/orca-fork-policy'
 import * as ExpoCrypto from 'expo-crypto'
 import type { ConnectionLogSink } from '../../diagnostics/connection/connection-log-types'
 import type { ForegroundNudgeReason } from './connection-state'
@@ -39,6 +40,9 @@ export function startMobileEndpointLifecycle(
   initialHost: HostProfile,
   onLog: ConnectionLogSink
 ): EndpointLifecycle {
+  if (!ORCA_FORK_POLICY.vendorServices) {
+    return { setForeground() {}, nudge() {}, stop() {} }
+  }
   let stopped = false
   let foreground = true
   let owner: EndpointOwner

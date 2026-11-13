@@ -1,3 +1,4 @@
+import { browserCredentialImportDenial } from '../policy/browser-credential-import-policy'
 import { summarizePartitionSkips } from '../browser-cookie-partition-summary'
 import type {
   BrowserCookieImportResult,
@@ -25,6 +26,10 @@ export async function importValidatedCookies(
   target: CookieImportTarget,
   options: CookieImportOptions = {}
 ): Promise<BrowserCookieImportResult> {
+  const denied = browserCredentialImportDenial()
+  if (denied) {
+    return denied
+  }
   const targetPartition = target.partition
   const importDomainCache = new Map<string, boolean>()
   const validDomainCookies = cookies.filter((cookie) => {

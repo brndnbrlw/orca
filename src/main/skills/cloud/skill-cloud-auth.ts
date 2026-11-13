@@ -1,3 +1,4 @@
+import { ORCA_FORK_POLICY } from '../../../shared/orca-fork-policy'
 import type { SkillCloudOperation, SkillCloudOptions } from '../../../shared/skill-cloud-contract'
 import { ensureActiveOrcaProfile } from '../../orca-profiles/profile-index-store'
 import { getOrcaCloudAuthConfig } from '../../orca-profiles/cloud-auth/profile-cloud-auth-config'
@@ -12,6 +13,9 @@ export async function runSkillCloudOperation<T>(input: {
   options: SkillCloudOptions
   operation(token: string, apiUrl: string): Promise<T>
 }): Promise<SkillCloudOperation<T>> {
+  if (!ORCA_FORK_POLICY.vendorServices) {
+    return { status: 'unconfigured', message: 'Hosted skills are disabled in this fork.' }
+  }
   const apiUrl = resolveArtifactCloudApiUrl(input.options.apiUrl)
   const active = ensureActiveOrcaProfile(input.userDataPath)
   const stamp = {

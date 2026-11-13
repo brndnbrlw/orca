@@ -1,3 +1,4 @@
+import '../../../../shared/testing/upstream-browser-credential-import.test-fixture'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const {

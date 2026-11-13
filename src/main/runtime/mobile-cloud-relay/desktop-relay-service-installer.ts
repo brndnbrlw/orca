@@ -1,3 +1,4 @@
+import { ORCA_FORK_POLICY } from '../../../shared/orca-fork-policy'
 import type { MobileRelayPairingProvider } from '../rpc/server/runtime-rpc-pairing-types'
 import type { DesktopRelayService } from './desktop-relay-service'
 
@@ -64,6 +65,9 @@ export function createDesktopRelayServiceInstaller(
     }
   }
   const ensure = (): Promise<boolean> => {
+    if (!ORCA_FORK_POLICY.vendorServices) {
+      return Promise.resolve(false)
+    }
     if (installed) {
       return Promise.resolve(true)
     }

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import type { GlobalSettings } from '../../shared/global-settings-types'
 import { resolveConsent, _resetMisconfigWarnCacheForTests } from './consent'
 
@@ -215,3 +215,13 @@ describe('resolveConsent', () => {
     ).toEqual({ effective: 'disabled', reason: 'orca_disabled' })
   })
 })
+
+// Retain upstream transport mechanics under a test-only enabled policy.
+vi.mock('../../shared/orca-fork-policy', () => ({
+  ORCA_FORK_POLICY: Object.freeze({
+    vendorServices: true,
+    executablePlugins: false,
+    cloudRecipes: false,
+    browserCredentialImport: false
+  })
+}))

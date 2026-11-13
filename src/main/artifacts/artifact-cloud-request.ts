@@ -1,3 +1,4 @@
+import { ORCA_FORK_POLICY } from '../../shared/orca-fork-policy'
 import type { ArtifactWriteRequest } from '../../shared/artifacts/artifacts'
 import { OrcaCloudRequestError } from '../orca-profiles/cloud-auth/profile-cloud-client'
 
@@ -23,6 +24,9 @@ export async function artifactRequest<T>(
   path: string,
   options: { method?: string; body?: unknown; editToken?: string; idempotencyKey?: string } = {}
 ): Promise<T> {
+  if (!ORCA_FORK_POLICY.vendorServices) {
+    throw new Error('Hosted artifacts are disabled in this fork.')
+  }
   const response = await fetch(`${apiUrl}/v1/artifacts${path}`, {
     method: options.method ?? 'GET',
     headers: {

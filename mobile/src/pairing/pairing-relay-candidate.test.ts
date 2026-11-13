@@ -1,3 +1,5 @@
+import '../test-support/mobile-relay-native-modules.test-fixture'
+import '../test-support/upstream-mobile-relay.test-fixture'
 import { describe, expect, it, vi } from 'vitest'
 import type { PairingCandidateClient } from './mobile-relay-physical-client'
 import { RelayOuterError } from '../transport/encryption/mobile-relay-e2ee-link'

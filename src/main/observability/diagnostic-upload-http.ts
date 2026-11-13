@@ -1,3 +1,4 @@
+import { ORCA_FORK_POLICY } from '../../shared/orca-fork-policy'
 import { request as httpRequest, type ClientRequest, type IncomingMessage } from 'node:http'
 import { request as httpsRequest } from 'node:https'
 import { URL } from 'node:url'
@@ -36,6 +37,9 @@ function postRaw(
   headers: Record<string, string>,
   timeoutMs: number
 ): Promise<unknown> {
+  if (!ORCA_FORK_POLICY.vendorServices) {
+    return Promise.reject(new Error('Diagnostic uploads are disabled in this fork.'))
+  }
   return new Promise((resolve, reject) => {
     let settled = false
     let req: ClientRequest | null = null

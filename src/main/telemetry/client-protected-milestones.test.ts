@@ -256,3 +256,13 @@ describe('protected telemetry milestones', () => {
     expect(state.settings.telemetry?.protectedMilestones?.meaningfulActivityDay).toBe(20_766)
   })
 })
+
+// Retain upstream transport mechanics under a test-only enabled policy.
+vi.mock('../../shared/orca-fork-policy', () => ({
+  ORCA_FORK_POLICY: Object.freeze({
+    vendorServices: true,
+    executablePlugins: false,
+    cloudRecipes: false,
+    browserCredentialImport: false
+  })
+}))

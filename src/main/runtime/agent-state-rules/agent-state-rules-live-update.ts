@@ -1,3 +1,4 @@
+import { ORCA_FORK_POLICY } from '../../../shared/orca-fork-policy'
 import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { getAppEnvironment } from '../../../shared/app-environment'
@@ -113,7 +114,10 @@ export class AgentStateRulesLiveUpdater {
   async start(): Promise<void> {
     this.stop()
     const settings = this.deps.readSettings()
-    const live = this.deps.isPackaged && settings.agentStateRulesLiveUpdates !== false
+    const live =
+      ORCA_FORK_POLICY.vendorServices &&
+      this.deps.isPackaged &&
+      settings.agentStateRulesLiveUpdates !== false
     const run = { channel: live ? agentStateRulesChannelForAppVersion(this.deps.appVersion) : null }
     this.run = run
     const overridePath = settings.agentStateRulesPath

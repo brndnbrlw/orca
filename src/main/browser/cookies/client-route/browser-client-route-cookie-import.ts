@@ -1,3 +1,4 @@
+import { browserCredentialImportDenial } from '../policy/browser-credential-import-policy'
 import type {
   BrowserCookieImportResult,
   BrowserSessionProfileSource
@@ -72,6 +73,10 @@ async function importIntoClientRoutePartition(
   target: ClientRouteCookieImportTarget,
   resolveSource: () => Promise<ClientRouteCookieSource | BrowserCookieImportFailure>
 ): Promise<BrowserCookieImportResult | null> {
+  const denied = browserCredentialImportDenial()
+  if (denied) {
+    return denied
+  }
   const routeIdentity = getPairedRuntimeBrowserClientRouteIdentity(target.environmentId)
   if (!routeIdentity) {
     return null

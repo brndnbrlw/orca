@@ -1,3 +1,4 @@
+import { ORCA_FORK_POLICY } from '../../shared/orca-fork-policy'
 import os from 'node:os'
 import { app, ipcMain } from 'electron'
 import { readFeedbackImagesDelivered, validateFeedbackImages } from './feedback-image-attachments'
@@ -183,6 +184,9 @@ async function submitFeedbackWithDiagnosticBundle(
 export async function submitFeedback(
   args: InternalFeedbackSubmitArgs
 ): Promise<FeedbackSubmitResult> {
+  if (!ORCA_FORK_POLICY.vendorServices) {
+    return { ok: false, status: null, error: 'Sending feedback is disabled in this fork.' }
+  }
   // Ignore discarded crash-lane images instead of rejecting over unused attachments.
   if (args.submissionType !== 'crash' && args.images !== undefined) {
     const imageError = validateFeedbackImages(args.images)

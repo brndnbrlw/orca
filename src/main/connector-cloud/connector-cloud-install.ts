@@ -1,3 +1,4 @@
+import { ORCA_FORK_POLICY } from '../../shared/orca-fork-policy'
 import { hostname } from 'node:os'
 import { getAppEnvironment } from '../../shared/app-environment'
 import { admitConnectorAgent, CONNECTOR_AGENTS } from '../external-conversations/connector-agents'
@@ -20,6 +21,9 @@ export function createDesktopConnectorCloud(
   userDataPath: string,
   isFenced: () => boolean
 ): ConnectorCloud | null {
+  if (!ORCA_FORK_POLICY.vendorServices) {
+    return null
+  }
   const auth = getOrcaCloudAuthConfig()
   if (!auth.configured) {
     return null

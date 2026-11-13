@@ -1,4 +1,6 @@
+import { ORCA_FORK_POLICY } from '../../../src/shared/orca-fork-policy'
 import { clampUtf8TextPrefix } from '../../../src/shared/utf8-byte-limits'
+import { translate } from '../i18n/mobile-i18n'
 
 const CONNECTION_DIAGNOSTICS_ENDPOINT = 'https://orca.dev/v1/feedback'
 const SUBMISSION_TIMEOUT_MS = 10_000
@@ -17,6 +19,15 @@ export async function submitConnectionDiagnostics(
   submission: ConnectionDiagnosticsSubmission,
   fetchImpl: (url: string, init: RequestInit) => Promise<Response> = fetch
 ): Promise<ConnectionDiagnosticsSubmissionResult> {
+  if (!ORCA_FORK_POLICY.vendorServices) {
+    return {
+      ok: false,
+      error: translate(
+        'diagnostics.connectionDiagnosticsSubmission.uploadsDisabled',
+        'Diagnostic uploads are disabled in this Orca fork.'
+      )
+    }
+  }
   const report = boundConnectionDiagnosticsReport(submission.report)
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), SUBMISSION_TIMEOUT_MS)

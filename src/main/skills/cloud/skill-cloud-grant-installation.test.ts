@@ -118,3 +118,13 @@ it('reports only selected skills in manifest order', async () => {
     expect(result.value.status).toBe('failed')
   }
 })
+
+// Retain upstream transport mechanics under a test-only enabled policy.
+vi.mock('../../../shared/orca-fork-policy', () => ({
+  ORCA_FORK_POLICY: Object.freeze({
+    vendorServices: true,
+    executablePlugins: false,
+    cloudRecipes: false,
+    browserCredentialImport: false
+  })
+}))

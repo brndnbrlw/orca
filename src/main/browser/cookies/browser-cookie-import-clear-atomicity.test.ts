@@ -1,3 +1,4 @@
+import '../../../shared/testing/upstream-browser-credential-import.test-fixture'
 import { describe, expect, it, vi } from 'vitest'
 import type { CookieClearIdentity } from './storage/cookie-store-contracts'
 import type { ValidatedCookie } from './sources/browser-cookie-validation'

@@ -182,3 +182,13 @@ it('expires persisted registration at seven days despite host activity and renew
   await flush()
   expect(h.client.send).toHaveBeenCalledTimes(2)
 })
+
+// Retain upstream transport mechanics under a test-only enabled policy.
+vi.mock('../../../shared/orca-fork-policy', () => ({
+  ORCA_FORK_POLICY: Object.freeze({
+    vendorServices: true,
+    executablePlugins: false,
+    cloudRecipes: false,
+    browserCredentialImport: false
+  })
+}))

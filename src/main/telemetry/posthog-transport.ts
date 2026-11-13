@@ -1,3 +1,4 @@
+import { ORCA_FORK_POLICY } from '../../shared/orca-fork-policy'
 import { arch as osArch, platform as osPlatform, release as osRelease } from 'node:os'
 import type * as PostHogSdk from 'posthog-node'
 import { getAppEnvironment } from '../../shared/app-environment'
@@ -78,6 +79,9 @@ function loadPostHogSdk(): typeof PostHogSdk {
 }
 
 export function createPostHogClient(writeKey: string, consent: ConsentState): PostHogSdk.PostHog {
+  if (!ORCA_FORK_POLICY.vendorServices) {
+    throw new Error('Telemetry is disabled in this fork.')
+  }
   const client = new (loadPostHogSdk().PostHog)(writeKey, {
     host: 'https://us.i.posthog.com',
     flushAt: POSTHOG_FLUSH_AT,

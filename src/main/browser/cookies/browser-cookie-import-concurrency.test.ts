@@ -1,3 +1,4 @@
+import '../../../shared/testing/upstream-browser-credential-import.test-fixture'
 import { copyFileSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'

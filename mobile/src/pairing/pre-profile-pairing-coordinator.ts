@@ -1,3 +1,4 @@
+import { ORCA_FORK_POLICY } from '../../../src/shared/orca-fork-policy'
 import { Platform } from 'react-native'
 import { connect, type ConnectOptions } from '../transport/rpc/direct-rpc-connect'
 import { resolvePairingHostIdentity, savePairedHost } from '../host-catalog/host-store'
@@ -171,7 +172,7 @@ async function runPairing(
   )
   assertActive(isDisposed)
   let journal: MobileRelayPairingJournal | null = null
-  if (offer.relay && dependencies.platform !== 'web') {
+  if (ORCA_FORK_POLICY.vendorServices && offer.relay && dependencies.platform !== 'web') {
     // Give committed recovery a bounded publication chance before the new scan supersedes its journal.
     await dependencies.recoverPendingJournal()
     assertActive(isDisposed)

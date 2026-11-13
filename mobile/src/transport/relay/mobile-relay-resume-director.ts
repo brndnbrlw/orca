@@ -1,3 +1,4 @@
+import { assertMobileRelayAllowed } from './mobile-relay-fork-policy'
 import { z } from 'zod'
 import { parseRetryAfterHeaderMs } from '../../../../src/shared/retry-after-header'
 import { MOBILE_RELAY_RETRY_AFTER_MAX_MS } from './mobile-relay-retry-delays'
@@ -37,6 +38,7 @@ export async function resolveMobileRelayEndpoint(args: {
   fetchImpl?: (url: string, init: RequestInit) => Promise<Response>
   timeoutMs?: number
 }): Promise<MobileRelayEndpoint> {
+  assertMobileRelayAllowed()
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), args.timeoutMs ?? 5000)
   try {

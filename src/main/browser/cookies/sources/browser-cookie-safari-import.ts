@@ -1,3 +1,4 @@
+import { browserCredentialImportDenial } from '../policy/browser-credential-import-policy'
 import { readFileSync } from 'node:fs'
 import { browserCookieImportFailure } from '../../../../shared/browser-cookie-import-failure-copy'
 import type { BrowserCookieImportResult } from '../../../../shared/browser-workspace-types'
@@ -12,6 +13,10 @@ export async function importCookiesFromSafari(
   browser: DetectedBrowser,
   targetPartition: string
 ): Promise<BrowserCookieImportResult> {
+  const denied = browserCredentialImportDenial()
+  if (denied) {
+    return denied
+  }
   diag(`importCookiesFromSafari: partition="${targetPartition}"`)
 
   let data: Buffer

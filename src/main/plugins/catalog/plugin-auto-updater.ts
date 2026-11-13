@@ -1,3 +1,4 @@
+import { ORCA_FORK_POLICY } from '../../../shared/orca-fork-policy'
 import { compareAppVersions } from '../../../shared/app-version'
 import { pluginUpdateGrowsAccess } from '../../../shared/plugins/approval/plugin-update-access-growth'
 import type {
@@ -74,6 +75,9 @@ export class PluginAutoUpdater {
 
   /** One pass; concurrent callers share it. */
   run(): Promise<void> {
+    if (!ORCA_FORK_POLICY.vendorServices) {
+      return Promise.reject(new Error('Automatic plugin updates are disabled in this fork.'))
+    }
     this.running ??= this.performRun().finally(() => {
       this.running = null
     })
@@ -81,7 +85,7 @@ export class PluginAutoUpdater {
   }
 
   syncPeriodicRun(enabled: boolean, intervalMs = PLUGIN_AUTO_UPDATE_INTERVAL_MS): void {
-    if (!enabled) {
+    if (!ORCA_FORK_POLICY.vendorServices || !enabled) {
       this.dispose()
       return
     }

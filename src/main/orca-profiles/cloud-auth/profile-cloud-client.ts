@@ -1,3 +1,4 @@
+import { ORCA_FORK_POLICY } from '../../../shared/orca-fork-policy'
 import type {
   OrcaCloudCapabilities,
   OrcaCloudOrgSummary,
@@ -187,6 +188,9 @@ async function readCloudErrorCode(response: Response): Promise<string | undefine
 }
 
 async function postJson<T>(url: string, body: unknown, options?: PostJsonOptions): Promise<T> {
+  if (!ORCA_FORK_POLICY.vendorServices) {
+    throw new Error('Orca vendor services are disabled in this fork.')
+  }
   const response = await fetch(url, {
     method: 'POST',
     headers: {

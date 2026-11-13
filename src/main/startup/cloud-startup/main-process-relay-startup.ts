@@ -1,3 +1,4 @@
+import { ORCA_FORK_POLICY } from '../../../shared/orca-fork-policy'
 import { app, powerMonitor } from 'electron'
 import { getOrcaCloudAuthConfig } from '../../orca-profiles/cloud-auth/profile-cloud-auth-config'
 import { getProfileUserDataPath } from '../../orca-profiles/profile-storage-paths'
@@ -9,6 +10,9 @@ import { mainProcessState as state } from '../main-process-state'
 
 // Register before proxy readiness; the installer waits before its first request.
 export function startDesktopRelayService(runtimeRpc: OrcaRuntimeRpcServer): void {
+  if (!ORCA_FORK_POLICY.vendorServices) {
+    return
+  }
   const installer = createDesktopRelayServiceInstaller({
     runtimeRpc,
     whenNetworkReady: state.initialProxyApplicationReady,

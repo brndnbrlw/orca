@@ -503,6 +503,9 @@
       "failed": "Showed the failure screen.",
       "waiting": "Waited for the host.",
       "offeredGeneration": " (generation {{generation}})"
+    },
+    "connectionDiagnosticsSubmission": {
+      "uploadsDisabled": "Diagnostic uploads are disabled in this Orca fork."
     }
   },
   "dictation": {

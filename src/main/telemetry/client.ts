@@ -1,5 +1,6 @@
 // All main/IPC telemetry shares shutdown → sampling → burst cap → consent → validation → capture ordering. Cap before settings reads to bound renderer flood cost; disable person profiles per capture because the Node SDK lacks an init-time equivalent.
 
+import { ORCA_FORK_POLICY } from '../../shared/orca-fork-policy'
 import { randomUUID } from 'node:crypto'
 import type { PostHog } from 'posthog-node'
 import type { CommonProps, EventName, EventProps, OptInVia } from '../../shared/telemetry-events'
@@ -34,10 +35,10 @@ const WRITE_KEY: string | null =
 const IS_OFFICIAL_BUILD: boolean =
   (BUILD_IDENTITY === 'stable' || BUILD_IDENTITY === 'rc') &&
   typeof WRITE_KEY === 'string' &&
+  ORCA_FORK_POLICY.vendorServices &&
   WRITE_KEY.length > 0
 
 let posthog: PostHog | null = null
-let sessionId: string | null = null
 let commonProps: CommonProps | null = null
 let shuttingDown = false
 let storeRef: Store | null = null
@@ -73,7 +74,7 @@ export function initTelemetry(store: Store, scheduleStart: postHogStart.StartSch
     return
   }
 
-  sessionId = randomUUID()
+  const sessionId = randomUUID()
   commonProps = buildCommonProps(installId, sessionId, BUILD_IDENTITY)
 
   // Official builds only; contributor builds retain the original announcement behavior.
@@ -253,7 +254,7 @@ function enqueueCapture(name: EventName, props: CaptureProperties): void {
 }
 
 export async function setOptIn(via: OptInVia, optedIn: boolean): Promise<void> {
-  if (!storeRef) {
+  if (!ORCA_FORK_POLICY.vendorServices || !storeRef) {
     return
   }
   // Start before consent changes: opt-out must flush held events and enqueue its own event first.
@@ -296,7 +297,7 @@ export async function setOptIn(via: OptInVia, optedIn: boolean): Promise<void> {
 
 // Banner dismissal persists silent opt-in: emit app_opened but no consent-change event. Keep distinct surfaces named explicitly.
 export async function persistBannerAcknowledgeWithoutEmitting(): Promise<void> {
-  if (!storeRef) {
+  if (!ORCA_FORK_POLICY.vendorServices || !storeRef) {
     return
   }
   const settings = storeRef.getSettings()
@@ -318,7 +319,7 @@ export async function persistBannerAcknowledgeWithoutEmitting(): Promise<void> {
 }
 
 export function trackAppOpenedOnce(): void {
-  if (appOpenedTrackedThisSession) {
+  if (!ORCA_FORK_POLICY.vendorServices || appOpenedTrackedThisSession) {
     return
   }
   // Repo count zero identifies the pre-repo cohort (onboarding-funnel-cohort-addendum.md).
@@ -330,7 +331,7 @@ export async function shutdownTelemetry(): Promise<void> {
   shuttingDown = true
   const instance = postHogStart.hasSendableHeldCaptures() ? ensurePostHogClient() : posthog
   postHogStart.resetStart()
-  if (!instance) {
+  if (!ORCA_FORK_POLICY.vendorServices || !instance) {
     return
   }
   try {

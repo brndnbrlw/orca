@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { persistBannerAcknowledgeWithoutEmitting, track, trackAppOpenedOnce } from './client'
 import {
@@ -63,3 +63,13 @@ describe('Agent Dashboard app-open snapshot', () => {
     })
   })
 })
+
+// Retain upstream transport mechanics under a test-only enabled policy.
+vi.mock('../../shared/orca-fork-policy', () => ({
+  ORCA_FORK_POLICY: Object.freeze({
+    vendorServices: true,
+    executablePlugins: false,
+    cloudRecipes: false,
+    browserCredentialImport: false
+  })
+}))

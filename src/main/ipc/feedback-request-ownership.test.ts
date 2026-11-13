@@ -113,3 +113,13 @@ describe('feedback request ownership', () => {
     expect(requestSignal().aborted).toBe(true)
   })
 })
+
+// Retain upstream transport mechanics under a test-only enabled policy.
+vi.mock('../../shared/orca-fork-policy', () => ({
+  ORCA_FORK_POLICY: Object.freeze({
+    vendorServices: true,
+    executablePlugins: false,
+    cloudRecipes: false,
+    browserCredentialImport: false
+  })
+}))

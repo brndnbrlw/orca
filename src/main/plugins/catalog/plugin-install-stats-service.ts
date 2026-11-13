@@ -1,3 +1,4 @@
+import { ORCA_FORK_POLICY } from '../../../shared/orca-fork-policy'
 import { readFile, stat, mkdir } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import {
@@ -80,7 +81,12 @@ export class PluginInstallStatsService {
   }
 
   private refreshIfStale(): void {
-    if (this.inFlight || this.now() < this.nextFetchAt || !this.isFetchAllowed()) {
+    if (
+      !ORCA_FORK_POLICY.vendorServices ||
+      this.inFlight ||
+      this.now() < this.nextFetchAt ||
+      !this.isFetchAllowed()
+    ) {
       return
     }
     this.inFlight = this.performRefresh()
@@ -155,6 +161,9 @@ export async function fetchPluginInstallStats(
   fetcher: typeof fetch = fetch,
   url = PLUGIN_INSTALL_STATS_URL
 ): Promise<PluginInstallStats> {
+  if (!ORCA_FORK_POLICY.vendorServices) {
+    throw new Error('Vendor plugin statistics are disabled in this fork.')
+  }
   const json = await fetchBoundedJson(fetcher, url, {
     label: 'plugin install-stats',
     maxBytes: PLUGIN_INSTALL_STATS_MAX_BYTES,

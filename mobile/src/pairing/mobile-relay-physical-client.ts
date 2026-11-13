@@ -1,3 +1,4 @@
+import { assertMobileRelayAllowed } from '../transport/relay/mobile-relay-fork-policy'
 import type { PairingRelay } from '../../../src/shared/remote-runtime/pairing/mobile-relay-pairing-offer'
 import { RelayPhoneHelloSchema } from '../../../src/shared/remote-runtime/relay/mobile-relay-phone-protocol'
 import { latchHostToE2EEV2 } from '../transport/encryption/e2ee-v2-host-latch'
@@ -40,6 +41,7 @@ export function connectMobileRelayForPairing(args: {
   createSocket?: (url: string) => WebSocket
   onLog?: ConnectionLogSink
 }): PairingCandidateClient {
+  assertMobileRelayAllowed()
   const requestTimeoutMs = args.requestTimeoutMs ?? 30_000
   const socketUrl = relayConnectWebSocketUrl(args.relay.cellUrl, args.relay.relayHostId)
   const log = createPairingRelayLogger(args.onLog)

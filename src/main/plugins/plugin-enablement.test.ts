@@ -1,3 +1,4 @@
+import '../../shared/testing/upstream-plugin-execution.test-fixture'
 import { tmpdir } from 'node:os'
 import { describe, expect, it, vi } from 'vitest'
 import { getDefaultSettings } from '../../shared/constants'

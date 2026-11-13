@@ -1,3 +1,5 @@
+import '../../test-support/upstream-mobile-relay.test-fixture'
+import '../../test-support/mobile-relay-native-modules.test-fixture'
 import { describe, expect, it, vi } from 'vitest'
 
 vi.mock('./mobile-e2ee-v2-client-session', () => ({

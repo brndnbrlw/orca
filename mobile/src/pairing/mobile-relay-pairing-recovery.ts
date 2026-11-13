@@ -1,3 +1,4 @@
+import { ORCA_FORK_POLICY } from '../../../src/shared/orca-fork-policy'
 import { Platform } from 'react-native'
 import type {
   DeviceCredentialInstalled,
@@ -71,6 +72,9 @@ let recoveryPromise: Promise<MobileRelayPairingRecoveryResult> | null = null
 export function recoverMobileRelayPairing(
   overrides: Partial<RecoveryDependencies> = {}
 ): Promise<MobileRelayPairingRecoveryResult> {
+  if (!ORCA_FORK_POLICY.vendorServices) {
+    return Promise.resolve('none')
+  }
   if (recoveryPromise) {
     return recoveryPromise
   }

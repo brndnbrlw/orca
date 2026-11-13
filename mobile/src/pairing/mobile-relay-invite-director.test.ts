@@ -1,3 +1,4 @@
+import '../test-support/upstream-mobile-relay.test-fixture'
 import { describe, expect, it } from 'vitest'
 import {
   RelayDirectorMoveNotNewerError,

@@ -1,3 +1,4 @@
+import { browserCredentialImportDenial } from '../policy/browser-credential-import-policy'
 import { DatabaseSync } from 'node:sqlite'
 import { browserCookieImportFailure } from '../../../../shared/browser-cookie-import-failure-copy'
 import { copyFileSync, existsSync, mkdtempSync, rmSync } from 'node:fs'
@@ -18,6 +19,10 @@ export async function importCookiesFromFirefox(
   targetPartition: string,
   options: CookieImportOptions
 ): Promise<BrowserCookieImportResult> {
+  const denied = browserCredentialImportDenial()
+  if (denied) {
+    return denied
+  }
   diag(`importCookiesFromFirefox: partition="${targetPartition}"`)
 
   const tmpDir = mkdtempSync(join(tmpdir(), 'orca-cookie-import-'))

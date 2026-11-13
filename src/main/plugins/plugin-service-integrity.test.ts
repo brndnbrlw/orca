@@ -1,3 +1,4 @@
+import '../../shared/testing/upstream-plugin-execution.test-fixture'
 import { mkdtemp, mkdir, rename, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { basename, join } from 'node:path'

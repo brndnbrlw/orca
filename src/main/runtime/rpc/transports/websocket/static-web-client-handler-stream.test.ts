@@ -66,7 +66,12 @@ function request(response = fakeResponse()) {
   const handler = createStaticWebClientHandler(root)
   handler(
     // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: This handler reads only these method/url fields.
-    { method: 'GET', url: '/assets/fixture.js' } as IncomingMessage,
+    {
+      method: 'GET',
+      url: '/assets/fixture.js',
+      headers: { host: '127.0.0.1' },
+      socket: { localAddress: '127.0.0.1' }
+    } as IncomingMessage,
     // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: The fixture implements the writable response surface used by this handler.
     response as unknown as ServerResponse
   )

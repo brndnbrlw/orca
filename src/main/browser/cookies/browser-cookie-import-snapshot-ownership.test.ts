@@ -1,3 +1,4 @@
+import '../../../shared/testing/upstream-browser-credential-import.test-fixture'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type * as NodeSqlite from 'node:sqlite'
 import type * as ChromiumCookieSnapshotModule from './chromium/chromium-cookie-snapshot'

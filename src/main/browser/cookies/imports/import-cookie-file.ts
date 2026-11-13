@@ -1,3 +1,4 @@
+import { browserCredentialImportDenial } from '../policy/browser-credential-import-policy'
 import { browserCookieImportFailure } from '../../../../shared/browser-cookie-import-failure-copy'
 import type { BrowserCookieImportResult } from '../../../../shared/browser-workspace-types'
 import { readFile } from 'node:fs/promises'
@@ -13,6 +14,10 @@ export async function importCookiesFromFile(
   filePath: string,
   targetPartition: string
 ): Promise<BrowserCookieImportResult> {
+  const denied = browserCredentialImportDenial()
+  if (denied) {
+    return denied
+  }
   let rawContent: string
   try {
     rawContent = await readFile(filePath, 'utf-8')

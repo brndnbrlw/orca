@@ -200,3 +200,13 @@ describe('Orca cloud overlapping connect', () => {
     expect(getCurrentOrcaProfileAuthStatus(userDataPath)).toMatchObject({ state: 'local' })
   })
 })
+
+// Retain upstream transport mechanics under a test-only enabled policy.
+vi.mock('../../../shared/orca-fork-policy', () => ({
+  ORCA_FORK_POLICY: Object.freeze({
+    vendorServices: true,
+    executablePlugins: false,
+    cloudRecipes: false,
+    browserCredentialImport: false
+  })
+}))

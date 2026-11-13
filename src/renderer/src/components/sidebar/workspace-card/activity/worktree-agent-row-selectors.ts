@@ -91,7 +91,8 @@ export function getTabIdToWorktreeId(
   return tabIdToWorktreeId
 }
 
-function getLiveTabIdToWorktreeId(
+/** Terminal tabs plus agent-session chat tabs: the tab map live status is bucketed by. */
+export function getLiveTabIdToWorktreeId(
   tabsByWorktree: WorktreeAgentRowsState['tabsByWorktree'],
   unifiedTabsByWorktree: WorktreeAgentRowsState['unifiedTabsByWorktree']
 ): Map<string, string> {
